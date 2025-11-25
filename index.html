@@ -1,361 +1,379 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>CYBERWORLD // NEON TERMINAL</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <style>
-    :root {
-      --bg: #02030a;
-      --bg-alt: #050819;
-      --fg: #d7f9ff;
-      --accent: #4af2c5;
-      --accent-strong: #5df2ff;
-      --accent-alt: #9b5dfc;
-      --danger: #ff5c7a;
-      --muted: #6b7280;
-      --scanline: rgba(255, 255, 255, 0.04);
-    }
+    <meta charset="UTF-8"/>
+    <title>CYBERWORLD // NEON TERMINAL</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <style>
+        :root {
+            --bg: #02030a;
+            --bg-alt: #050819;
+            --fg: #d7f9ff;
+            --accent: #4af2c5;
+            --accent-strong: #5df2ff;
+            --accent-alt: #9b5dfc;
+            --danger: #ff5c7a;
+            --muted: #6b7280;
+            --scanline: rgba(255, 255, 255, 0.04);
+        }
 
-    * {
-      box-sizing: border-box;
-    }
+        * {
+            box-sizing: border-box;
+        }
 
-    html, body {
-      margin: 0;
-      padding: 0;
-      height: 100%;
-    }
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+        }
 
-    body {
-      background:
-        radial-gradient(circle at 10% 0%, #24103b 0, #02030a 45%, #000000 90%);
-      color: var(--fg);
-      font-family: "JetBrains Mono", Menlo, Consolas, monospace;
-      min-height: 100vh;
-    }
+        body {
+            background: radial-gradient(circle at 10% 0%, #24103b 0, #02030a 45%, #000000 90%);
+            color: var(--fg);
+            font-family: "JetBrains Mono", Menlo, Consolas, monospace;
+            min-height: 100vh;
+        }
 
-    /* Fullscreen HUD overlays */
-    .hud-overlay {
-      pointer-events: none;
-      position: fixed;
-      inset: 0;
-      background:
-        repeating-linear-gradient(
-          to bottom,
-          var(--scanline) 0,
-          var(--scanline) 1px,
-          transparent 2px,
-          transparent 4px
-        );
-      mix-blend-mode: soft-light;
-      opacity: 0.45;
-      z-index: 0;
-    }
+        /* Fullscreen HUD overlays */
+        .hud-overlay {
+            pointer-events: none;
+            position: fixed;
+            inset: 0;
+            background: repeating-linear-gradient(
+                    to bottom,
+                    var(--scanline) 0,
+                    var(--scanline) 1px,
+                    transparent 2px,
+                    transparent 4px
+            );
+            mix-blend-mode: soft-light;
+            opacity: 0.45;
+            z-index: 0;
+        }
 
-    .hud-glow {
-      pointer-events: none;
-      position: fixed;
-      inset: 0;
-      background:
-        radial-gradient(circle at top, rgba(255, 255, 255, 0.18), transparent 55%),
-        radial-gradient(circle at 85% 110%, rgba(147, 51, 234, 0.4), transparent 60%);
-      mix-blend-mode: screen;
-      opacity: 0.35;
-      z-index: 0;
-    }
+        .hud-glow {
+            pointer-events: none;
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(circle at top, rgba(255, 255, 255, 0.18), transparent 55%),
+            radial-gradient(circle at 85% 110%, rgba(147, 51, 234, 0.4), transparent 60%);
+            mix-blend-mode: screen;
+            opacity: 0.35;
+            z-index: 0;
+        }
 
-    .terminal-page {
-      position: relative;
-      z-index: 1;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
+        .terminal-page {
+            position: relative;
+            z-index: 1;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
 
-    .term-header {
-      display: flex;
-      align-items: center;
-      padding: 6px 12px;
-      background: linear-gradient(
-        90deg,
-        #020617,
-        rgba(37, 99, 235, 0.5),
-        rgba(15, 23, 42, 0.96)
-      );
-      border-bottom: 1px solid rgba(148, 163, 184, 0.5);
-      box-shadow:
-        0 0 0 1px rgba(15, 23, 42, 0.8),
-        0 10px 40px rgba(0, 0, 0, 0.9);
-      position: sticky;
-      top: 0;
-      z-index: 3;
-    }
+        .term-header {
+            display: flex;
+            align-items: center;
+            padding: 6px 12px;
+            background: linear-gradient(
+                    90deg,
+                    #020617,
+                    rgba(37, 99, 235, 0.5),
+                    rgba(15, 23, 42, 0.96)
+            );
+            border-bottom: 1px solid rgba(148, 163, 184, 0.5);
+            box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.8),
+            0 10px 40px rgba(0, 0, 0, 0.9);
+            position: sticky;
+            top: 0;
+            z-index: 3;
+        }
 
-    .dots {
-      display: flex;
-      gap: 6px;
-      margin-right: 10px;
-    }
+        .dots {
+            display: flex;
+            gap: 6px;
+            margin-right: 10px;
+        }
 
-    .dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      box-shadow: 0 0 6px rgba(0, 0, 0, 0.7);
-    }
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            box-shadow: 0 0 6px rgba(0, 0, 0, 0.7);
+        }
 
-    .dot.red { background: #ff5f57; }
-    .dot.yellow { background: #febc2e; }
-    .dot.green { background: #28c840; }
+        .dot.red {
+            background: #ff5f57;
+        }
 
-    .title {
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 0.18em;
-      color: rgba(226, 232, 240, 0.9);
-      animation: glowPulse 3.5s ease-in-out infinite;
-    }
+        .dot.yellow {
+            background: #febc2e;
+        }
 
-    @keyframes glowPulse {
-      0% { text-shadow: 0 0 4px rgba(74, 242, 197, 0.6); }
-      50% { text-shadow: 0 0 12px rgba(93, 242, 255, 0.95); }
-      100% { text-shadow: 0 0 4px rgba(74, 242, 197, 0.6); }
-    }
+        .dot.green {
+            background: #28c840;
+        }
 
-    .term-body {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      padding: 10px 14px 60px;
-      color: #e0fdf9;
-      text-shadow: 0 0 4px rgba(90, 255, 207, 0.4);
-    }
+        .title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.18em;
+            color: rgba(226, 232, 240, 0.9);
+            animation: glowPulse 3.5s ease-in-out infinite;
+        }
 
-    .status-bar {
-      position: sticky;
-      top: 38px;
-      z-index: 3;
+        @keyframes glowPulse {
+            0% {
+                text-shadow: 0 0 4px rgba(74, 242, 197, 0.6);
+            }
+            50% {
+                text-shadow: 0 0 12px rgba(93, 242, 255, 0.95);
+            }
+            100% {
+                text-shadow: 0 0 4px rgba(74, 242, 197, 0.6);
+            }
+        }
 
-      display: flex;
-      justify-content: space-between;
-      gap: 6px;
-      flex-wrap: wrap;
-      margin-bottom: 6px;
-      padding: 6px 0;
+        .term-body {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 10px 14px 60px;
+            color: #e0fdf9;
+            text-shadow: 0 0 4px rgba(90, 255, 207, 0.4);
+        }
 
-      font-size: 10px;
-      color: rgba(148, 163, 184, 0.95);
-      text-transform: uppercase;
-      letter-spacing: 0.14em;
+        .status-bar {
+            position: sticky;
+            top: 38px;
+            z-index: 3;
 
-      background: rgba(3, 7, 18, 0.92);
-      backdrop-filter: blur(6px);
-      border-bottom: 1px solid rgba(56, 189, 248, 0.35);
-    }
+            display: flex;
+            justify-content: space-between;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-bottom: 6px;
+            padding: 6px 0;
 
-    .status-bar span {
-      padding: 2px 10px;
-      border-radius: 999px;
-      background: radial-gradient(circle at top, rgba(15, 23, 42, 0.96), rgba(3, 7, 18, 0.98));
-      border: 1px solid rgba(56, 189, 248, 0.55);
-      box-shadow:
-        0 0 7px rgba(56, 189, 248, 0.45),
-        inset 0 0 4px rgba(15, 23, 42, 0.94);
-    }
+            font-size: 10px;
+            color: rgba(148, 163, 184, 0.95);
+            text-transform: uppercase;
+            letter-spacing: 0.14em;
 
-    .status-bar strong {
-      color: var(--accent-strong);
-      font-weight: 600;
-    }
+            background: rgba(3, 7, 18, 0.92);
+            backdrop-filter: blur(6px);
+            border-bottom: 1px solid rgba(56, 189, 248, 0.35);
+        }
 
-    #terminal {
-      flex: 1;
-      font-size: 13px;
-      line-height: 1.42;
-      white-space: pre-wrap;
-      word-break: break-word;
-    }
+        .status-bar span {
+            padding: 2px 10px;
+            border-radius: 999px;
+            background: radial-gradient(circle at top, rgba(15, 23, 42, 0.96), rgba(3, 7, 18, 0.98));
+            border: 1px solid rgba(56, 189, 248, 0.55);
+            box-shadow: 0 0 7px rgba(56, 189, 248, 0.45),
+            inset 0 0 4px rgba(15, 23, 42, 0.94);
+        }
 
-    .line {
-      margin: 2px 0;
-    }
+        .status-bar strong {
+            color: var(--accent-strong);
+            font-weight: 600;
+        }
 
-    .line.system {
-      color: rgba(190, 242, 255, 0.9);
-    }
+        #terminal {
+            flex: 1;
+            font-size: 13px;
+            line-height: 1.42;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
 
-    .line.info {
-      color: var(--accent-strong);
-    }
+        .line {
+            margin: 2px 0;
+        }
 
-    .line.error {
-      color: var(--danger);
-    }
+        .line.system {
+            color: rgba(190, 242, 255, 0.9);
+        }
 
-    .line.dim {
-      color: rgba(148, 163, 184, 0.8);
-    }
+        .line.info {
+            color: var(--accent-strong);
+        }
 
-    .line.banner {
-      color: var(--accent);
-    }
+        .line.error {
+            color: var(--danger);
+        }
 
-    .prompt-wrapper {
-      position: sticky;
-      bottom: 0;
-      z-index: 2;
-      margin-top: 6px;
-      padding: 6px 14px 10px;
-      background: linear-gradient(
-        180deg,
-        rgba(3, 7, 18, 0.1),
-        rgba(3, 7, 18, 0.96)
-      );
-      border-top: 1px solid rgba(148, 163, 184, 0.4);
-      box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.8);
-    }
+        .line.dim {
+            color: rgba(148, 163, 184, 0.8);
+        }
 
-    .prompt-line {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
+        .line.banner {
+            color: var(--accent);
+        }
 
-    .prompt-label {
-      color: var(--accent-strong);
-      font-size: 13px;
-    }
+        .prompt-wrapper {
+            position: sticky;
+            bottom: 0;
+            z-index: 2;
+            margin-top: 6px;
+            padding: 6px 14px 10px;
+            background: linear-gradient(
+                    180deg,
+                    rgba(3, 7, 18, 0.1),
+                    rgba(3, 7, 18, 0.96)
+            );
+            border-top: 1px solid rgba(148, 163, 184, 0.4);
+            box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.8);
+        }
 
-    #input {
-      flex: 1;
-      background: transparent;
-      border: none;
-      outline: none;
-      color: var(--fg);
-      font: inherit;
-      padding: 4px 2px;
-      caret-color: var(--accent-strong);
-    }
+        .prompt-line {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
 
-    #input::placeholder {
-      color: rgba(148, 163, 184, 0.7);
-    }
+        .prompt-label {
+            color: var(--accent-strong);
+            font-size: 13px;
+        }
 
-    ::-webkit-scrollbar {
-      width: 8px;
-    }
+        #input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: var(--fg);
+            font: inherit;
+            padding: 4px 2px;
+            caret-color: var(--accent-strong);
+        }
 
-    ::-webkit-scrollbar-track {
-      background: rgba(15, 23, 42, 0.9);
-    }
+        #input::placeholder {
+            color: rgba(148, 163, 184, 0.7);
+        }
 
-    ::-webkit-scrollbar-thumb {
-      background: linear-gradient(to bottom, rgba(56, 189, 248, 0.9), rgba(74, 222, 128, 0.95));
-      border-radius: 999px;
-      box-shadow: 0 0 8px rgba(56, 189, 248, 0.9);
-    }
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
 
-    @keyframes blink {
-      50% { opacity: 0; }
-    }
+        ::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.9);
+        }
 
-    .cursor-blink {
-      animation: blink 1s step-start infinite;
-    }
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(to bottom, rgba(56, 189, 248, 0.9), rgba(74, 222, 128, 0.95));
+            border-radius: 999px;
+            box-shadow: 0 0 8px rgba(56, 189, 248, 0.9);
+        }
+
+        @keyframes blink {
+            50% {
+                opacity: 0;
+            }
+        }
+
+        .cursor-blink {
+            animation: blink 1s step-start infinite;
+        }
 
 
-    .damage-flash {
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      background: rgba(255,0,50,0.22);
-      animation: dmgFlash 0.18s ease-out;
-      z-index: 20;
-    }
+        .damage-flash {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            background: rgba(255, 0, 50, 0.22);
+            animation: dmgFlash 0.18s ease-out;
+            z-index: 20;
+        }
 
-    @keyframes dmgFlash {
-      0% { opacity: 1; }
-      100% { opacity: 0; }
-    }
+        @keyframes dmgFlash {
+            0% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+            }
+        }
 
-    @media (max-width: 640px) {
-      .term-body {
-        padding-inline: 8px;
-      }
-      .status-bar {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-    }
-  </style>
+        @media (max-width: 640px) {
+            .term-body {
+                padding-inline: 8px;
+            }
+
+            .status-bar {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
 </head>
 <body>
-  <div class="hud-overlay"></div>
-  <div class="hud-glow"></div>
+<div class="hud-overlay"></div>
+<div class="hud-glow"></div>
 
-  <div class="terminal-page">
+<div class="terminal-page">
     <header class="term-header">
-      <div class="dots">
-        <div class="dot red"></div>
-        <div class="dot yellow"></div>
-        <div class="dot green"></div>
-      </div>
-      <div class="title">CYBERWORLD // NEON TERMINAL</div>
+        <div class="dots">
+            <div class="dot red"></div>
+            <div class="dot yellow"></div>
+            <div class="dot green"></div>
+        </div>
+        <div class="title">CYBERWORLD // NEON TERMINAL</div>
     </header>
 
     <main class="term-body">
-      <div class="status-bar">
-        <span>seed:<strong id="seedLabel"></strong></span>
-        <span>node:<strong id="locationLabel"></strong></span>
-        <span>status:<strong id="statusLabel"></strong></span>
-      </div>
-      <div id="terminal"></div>
+        <div class="status-bar">
+            <span>seed:<strong id="seedLabel"></strong></span>
+            <span>node:<strong id="locationLabel"></strong></span>
+            <span>status:<strong id="statusLabel"></strong></span>
+        </div>
+        <div id="terminal"></div>
     </main>
 
     <div class="prompt-wrapper">
-      <div class="prompt-line">
-        <span class="prompt-label">sys@void:~$</span>
-        <input id="input" type="text" autocomplete="off" spellcheck="false"
-               placeholder="type 'help' to list commands…" />
-      </div>
+        <div class="prompt-line">
+            <span class="prompt-label">sys@void:~$</span>
+            <input id="input" type="text" autocomplete="off" spellcheck="false"
+                   placeholder="type 'help' to list commands…"/>
+        </div>
     </div>
-  </div>
+</div>
 
-  <script>
+<script>
     // ---------- BASIC GAME STATE ----------
     const state = {
-      seed: null,
-      rng: null,
-      world: null,
-      currentRoomId: null,
-      inventory: [],
-      tick: 0,
-      booted: false,
-      // player stats
-      health: 30,
-      maxHealth: 30,
-      xp: 0,
-      level: 1,
-      encounter: null // current enemy if any
+        seed: null,
+        rng: null,
+        world: null,
+        currentRoomId: null,
+        inventory: [],
+        tick: 0,
+        booted: false,
+        // player stats
+        health: 30,
+        maxHealth: 30,
+        xp: 0,
+        level: 1,
+        encounter: null, // current enemy if any
+        bootMode: "safe",
+        waitBootMode: false
     };
 
     // ---------- RNG (deterministic by seed) ----------
     function mulberry32(a) {
-      return function () {
-        let t = (a += 0x6d2b79f5);
-        t = Math.imul(t ^ (t >>> 15), t | 1);
-        t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-      };
+        return function () {
+            let t = (a += 0x6d2b79f5);
+            t = Math.imul(t ^ (t >>> 15), t | 1);
+            t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+            return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+        };
     }
 
     function rand() {
-      return state.rng ? state.rng() : Math.random();
+        return state.rng ? state.rng() : Math.random();
     }
 
     function choice(arr) {
-      return arr[Math.floor(rand() * arr.length)];
+        return arr[Math.floor(rand() * arr.length)];
     }
 
     // ---------- TERMINAL HELPERS ----------
@@ -366,729 +384,798 @@
     const statusLabel = document.getElementById("statusLabel");
 
     function scrollToBottom() {
-      requestAnimationFrame(() => {
-        window.scrollTo({
-          top: document.documentElement.scrollHeight,
-          left: 0,
-          behavior: "smooth"
+        requestAnimationFrame(() => {
+            window.scrollTo({
+                top: document.documentElement.scrollHeight,
+                left: 0,
+                behavior: "smooth"
+            });
         });
-      });
     }
 
     function appendLine(text = "", cls = "") {
-      const line = document.createElement("div");
-      line.className = "line " + cls;
-      line.textContent = text;
-      term.appendChild(line);
-      scrollToBottom();
+        const line = document.createElement("div");
+        line.className = "line " + cls;
+        line.textContent = text;
+        term.appendChild(line);
+        scrollToBottom();
     }
 
     function appendLines(lines, cls = "") {
-      lines.forEach((l) => appendLine(l, cls));
+        lines.forEach((l) => appendLine(l, cls));
     }
 
     function clearTerminal() {
-      term.innerHTML = "";
-      scrollToBottom();
+        term.innerHTML = "";
+        scrollToBottom();
     }
 
     function updateStatusHUD() {
-      if (!statusLabel) return;
-      statusLabel.textContent =
-        `HP ${state.health}/${state.maxHealth} | LVL ${state.level} | XP ${state.xp}`;
+        if (!statusLabel) return;
+        statusLabel.textContent =
+            `HP ${state.health}/${state.maxHealth} | LVL ${state.level} | XP ${state.xp}`;
     }
 
     function initPlayer() {
-      state.health = 30;
-      state.maxHealth = 30;
-      state.xp = 0;
-      state.level = 1;
-      state.encounter = null;
-      updateStatusHUD();
+        state.health = 30;
+        state.maxHealth = 30;
+        state.xp = 0;
+        state.level = 1;
+        state.encounter = null;
+        updateStatusHUD();
     }
 
     // ---------- WORLD GENERATION ----------
     const roomNames = [
-      "NEXUS GATEWAY",
-      "PHOSPHOR GRID NODE",
-      "CRYSTAL STACK ARCHIVE",
-      "SUBLEVEL ROUTER PIT",
-      "GLITCHED RELAY ROOM",
-      "SINGULARITY HUB",
-      "NEON BACKBONE SPINE",
-      "ECHO CACHE TERMINAL",
-      "VOID-LINK HALL",
-      "PHANTOM SWITCHSTACK"
+        "NEXUS GATEWAY",
+        "PHOSPHOR GRID NODE",
+        "CRYSTAL STACK ARCHIVE",
+        "SUBLEVEL ROUTER PIT",
+        "GLITCHED RELAY ROOM",
+        "SINGULARITY HUB",
+        "NEON BACKBONE SPINE",
+        "ECHO CACHE TERMINAL",
+        "VOID-LINK HALL",
+        "PHANTOM SWITCHSTACK"
     ];
 
     const biomes = [
-      "neon rain back-alley",
-      "subterranean data catacomb",
-      "ionized fog district",
-      "phase-shifted server canyon",
-      "mag-lev transit underbelly",
-      "holographic bazaar of packets",
-      "rain-slick code bazaar",
-      "low-orbit junk ring",
-      "bio-luminescent undergrid",
-      "fractured mirror city"
+        "neon rain back-alley",
+        "subterranean data catacomb",
+        "ionized fog district",
+        "phase-shifted server canyon",
+        "mag-lev transit underbelly",
+        "holographic bazaar of packets",
+        "rain-slick code bazaar",
+        "low-orbit junk ring",
+        "bio-luminescent undergrid",
+        "fractured mirror city"
     ];
 
     const ambience = [
-      "Holographic adverts stutter in and out of existence.",
-      "Neon mist coils around exposed cable bundles.",
-      "Distant sirens echo through layered alleyways.",
-      "Skyline reflections flicker in puddles of engine coolant.",
-      "A drone swarm hums overhead, mapping every surface.",
-      "Old terminals glow faintly beneath fresh graffiti.",
-      "Rain hits metal roofs like white noise static.",
-      "Fragments of AR overlays drift like ghosts in the air."
+        "Holographic adverts stutter in and out of existence.",
+        "Neon mist coils around exposed cable bundles.",
+        "Distant sirens echo through layered alleyways.",
+        "Skyline reflections flicker in puddles of engine coolant.",
+        "A drone swarm hums overhead, mapping every surface.",
+        "Old terminals glow faintly beneath fresh graffiti.",
+        "Rain hits metal roofs like white noise static.",
+        "Fragments of AR overlays drift like ghosts in the air."
     ];
 
     const itemsPool = [
-      "quantum access key",
-      "glitched memory shard",
-      "neon power cell",
-      "ghostline credential chip",
-      "encrypted stim patch",
-      "biolocked datadrive",
-      "holo-slate fragment",
-      "overclock injector"
+        "quantum access key",
+        "glitched memory shard",
+        "neon power cell",
+        "ghostline credential chip",
+        "encrypted stim patch",
+        "biolocked datadrive",
+        "holo-slate fragment",
+        "overclock injector"
     ];
 
     const eventsPool = [
-      "A system notification flickers: // routing table rewritten by unknown node.",
-      "Your HUD flashes: SUSPICIOUS SIGNAL TRIANGULATED… then goes dark.",
-      "Somewhere above, something heavy collides with a metal bridge.",
-      "A lens watches you, irises contracting, then shuts down.",
-      "The pavement beneath you pulses once, like a heartbeat."
+        "A system notification flickers: // routing table rewritten by unknown node.",
+        "Your HUD flashes: SUSPICIOUS SIGNAL TRIANGULATED… then goes dark.",
+        "Somewhere above, something heavy collides with a metal bridge.",
+        "A lens watches you, irises contracting, then shuts down.",
+        "The pavement beneath you pulses once, like a heartbeat."
     ];
 
     function generateWorld(seed) {
-      state.seed = seed;
-      state.rng = mulberry32(seed);
-      seedLabel.textContent = seed.toString(16);
+        state.seed = seed;
+        state.rng = mulberry32(seed);
+        seedLabel.textContent = seed.toString(16);
 
-      const roomCount = 8 + Math.floor(rand() * 5); // 8–12 nodes
-      const world = {};
-      const roomIds = [];
+        const roomCount = 8 + Math.floor(rand() * 5); // 8–12 nodes
+        const world = {};
+        const roomIds = [];
 
-      for (let i = 0; i < roomCount; i++) {
-        const id = "node_" + i;
-        roomIds.push(id);
+        for (let i = 0; i < roomCount; i++) {
+            const id = "node_" + i;
+            roomIds.push(id);
 
-        const name = choice(roomNames);
-        const biome = choice(biomes);
-        const desc = choice(ambience);
-        const items = rand() < 0.6 ? [choice(itemsPool)] : [];
-        world[id] = {
-          id,
-          name,
-          biome,
-          desc,
-          items,
-          exits: {}
-        };
-      }
-
-      const directions = ["north", "south", "east", "west", "up", "down"];
-
-      roomIds.forEach((id) => {
-        const room = world[id];
-        const exitCount = 2 + Math.floor(rand() * 3); // 2–4 exits
-        const shuffledDirs = directions.slice().sort(() => rand() - 0.5);
-        for (let i = 0; i < exitCount && i < directions.length; i++) {
-          const dir = shuffledDirs[i];
-          const target = choice(roomIds);
-          if (target !== id) {
-            room.exits[dir] = target;
-          }
+            const name = choice(roomNames);
+            const biome = choice(biomes);
+            const desc = choice(ambience);
+            const items = rand() < 0.6 ? [choice(itemsPool)] : [];
+            world[id] = {
+                id,
+                name,
+                biome,
+                desc,
+                items,
+                exits: {}
+            };
         }
-      });
 
-      state.world = world;
-      state.currentRoomId = roomIds[0];
-      state.inventory = [];
-      state.tick = 0;
-      updateLocationLabel();
-      updateStatusHUD();
+        const directions = ["north", "south", "east", "west", "up", "down"];
+
+        roomIds.forEach((id) => {
+            const room = world[id];
+            const exitCount = 2 + Math.floor(rand() * 3); // 2–4 exits
+            const shuffledDirs = directions.slice().sort(() => rand() - 0.5);
+            for (let i = 0; i < exitCount && i < directions.length; i++) {
+                const dir = shuffledDirs[i];
+                const target = choice(roomIds);
+                if (target !== id) {
+                    room.exits[dir] = target;
+                }
+            }
+        });
+
+        state.world = world;
+        state.currentRoomId = roomIds[0];
+        state.inventory = [];
+        state.tick = 0;
+        updateLocationLabel();
+        updateStatusHUD();
     }
 
     function currentRoom() {
-      return state.world[state.currentRoomId];
+        return state.world[state.currentRoomId];
     }
 
     function updateLocationLabel() {
-      const room = currentRoom();
-      locationLabel.textContent = room ? room.name : "VOID";
+        const room = currentRoom();
+        locationLabel.textContent = room ? room.name : "VOID";
     }
 
     // ---------- ENCOUNTERS & COMBAT ----------
     function inEncounter() {
-      return !!state.encounter;
+        return !!state.encounter;
     }
 
     function generateEnemy() {
-      const adjectives = [
-        "glitched",
-        "feral",
-        "encrypted",
-        "ghosted",
-        "rogue",
-        "mirror",
-        "null",
-        "synthetic"
-      ];
-      const types = [
-        "ICE construct",
-        "street daemon",
-        "trace hunter",
-        "corp watchdog",
-        "crawler swarm",
-        "junk specter",
-        "overseer drone",
-        "packet leech"
-      ];
+        const adjectives = [
+            "glitched",
+            "encrypted",
+            "feral",
+            "synthetic",
+            "phantom",
+            "rogue",
+            "mirrored",
+            "nullbound",
+            "spectral",
+            "corrupted",
+            "ionized",
+            "overclocked",
+            "fragmented",
+            "ghostline",
+            "void-linked",
+            "recursive",
+            "radiant",
+            "unstable",
+            "phase-shifted",
+            "bio-digital",
+            "low-frequency",
+            "crystallized",
+            "daemon-bound",
+            "flux-warped",
+            "dissonant"
+        ];
+        const types = [
+            "ICE construct",
+            "trace hunter",
+            "street daemon",
+            "spectral crawler",
+            "void sentinel",
+            "nexus watcher drone",
+            "synthetic stalker",
+            "packet leech",
+            "shard beast",
+            "grid phantom",
+            "recursion wraith",
+            "cortex splitter",
+            "neon brute",
+            "undernet butcher",
+            "overclock berserker",
+            "mirror wolf",
+            "quantum slicer",
+            "glitch serpent",
+            "malformed diplomat",
+            "echo-runner",
+            "data siphon worm",
+            "corporate kill-proxy",
+            "junkyard titan",
+            "relay harvester",
+            "anomaly titan"
+        ];
 
-      const tier = Math.min(3, 1 + Math.floor(state.level / 2) + (rand() < 0.4 ? 1 : 0));
-      const name = `${choice(adjectives)} ${choice(types)}`.toUpperCase();
+        const tier = Math.min(3, 1 + Math.floor(state.level / 2) + (rand() < 0.4 ? 1 : 0));
+        const name = `${choice(adjectives)} ${choice(types)}`.toUpperCase();
 
-      const baseHp = 14 + state.level * 5 + Math.floor(rand() * 8) + tier * 4;
-      const dmgMin = 2 + tier + Math.floor(state.level / 2);
-      const dmgMax = dmgMin + 3 + tier;
-      const xpReward = 8 + tier * 6 + Math.floor(rand() * 8) + state.level * 4;
+        const baseHp = 14 + state.level * 5 + Math.floor(rand() * 8) + tier * 4;
+        const dmgMin = 2 + tier + Math.floor(state.level / 2);
+        const dmgMax = dmgMin + 3 + tier;
+        const xpReward = 8 + tier * 6 + Math.floor(rand() * 8) + state.level * 4;
 
-      return {
-        name,
-        tier,
-        maxHp: baseHp,
-        hp: baseHp,
-        dmgMin,
-        dmgMax,
-        xpReward
-      };
+        return {
+            name,
+            tier,
+            maxHp: baseHp,
+            hp: baseHp,
+            dmgMin,
+            dmgMax,
+            xpReward
+        };
     }
 
     function spawnEncounter(source = "ambient") {
-      if (inEncounter()) return;
+        if (inEncounter()) return;
 
-      const enemy = generateEnemy();
-      state.encounter = enemy;
+        const enemy = generateEnemy();
+        state.encounter = enemy;
 
-      appendLine("", "system");
-      if (source === "move") {
-        appendLine("movement disturbance detected…", "dim");
-      } else if (source === "scan") {
-        appendLine("scan feedback spike… you've pinged something hostile.", "dim");
-      } else {
-        appendLine("the air thickens. something phases in.", "dim");
-      }
+        appendLine("", "system");
+        if (source === "move") {
+            appendLine("movement disturbance detected…", "dim");
+        } else if (source === "scan") {
+            appendLine("scan feedback spike… you've pinged something hostile.", "dim");
+        } else {
+            appendLine("the air thickens. something phases in.", "dim");
+        }
 
-      appendLine(`ENCOUNTER: ${enemy.name}`, "error");
-      appendLine(
-        `integrity: ${enemy.hp}/${enemy.maxHp} | threat-tier: ${enemy.tier}`,
-        "system"
-      );
-      appendLine("use 'attack' to engage or 'run' to attempt escape.", "system");
+        appendLine(`ENCOUNTER: ${enemy.name}`, "error");
+        appendLine(
+            `integrity: ${enemy.hp}/${enemy.maxHp} | threat-tier: ${enemy.tier}`,
+            "system"
+        );
+        appendLine("use 'attack' to engage or 'run' to attempt escape.", "system");
     }
 
     function recalcLevel() {
-      const oldLevel = state.level;
-      const newLevel = Math.floor(state.xp / 30) + 1;
-      if (newLevel > oldLevel) {
-        state.level = newLevel;
-        state.maxHealth = 30 + (state.level - 1) * 10;
-        state.health = state.maxHealth;
-        appendLine(
-          `level up → LVL ${state.level}! max HP increased to ${state.maxHealth}.`,
-          "info"
-        );
-      }
-      updateStatusHUD();
+        const oldLevel = state.level;
+        const newLevel = Math.floor(state.xp / 30) + 1;
+        if (newLevel > oldLevel) {
+            state.level = newLevel;
+            state.maxHealth = 30 + (state.level - 1) * 10;
+            state.health = state.maxHealth;
+            appendLine(
+                `level up → LVL ${state.level}! max HP increased to ${state.maxHealth}.`,
+                "info"
+            );
+        }
+        updateStatusHUD();
     }
 
     function playerAttack() {
-      const enemy = state.encounter;
-      if (!enemy) {
-        appendLine("no hostile signatures locked. nothing to attack.", "system");
-        return;
-      }
+        const enemy = state.encounter;
+        if (!enemy) {
+            appendLine("no hostile signatures locked. nothing to attack.", "system");
+            return;
+        }
 
-      const base = 3 + state.level * 2;
-      const variance = 4 + Math.floor(rand() * 4);
-      const dmg = base + variance;
+        const base = 3 + state.level * 2;
+        const variance = 4 + Math.floor(rand() * 4);
+        const dmg = base + variance;
 
-      enemy.hp = Math.max(0, enemy.hp - dmg);
-      appendLine(
-        `you strike the ${enemy.name} for ${dmg} integrity damage.`,
-        "info"
-      );
-
-      if (enemy.hp <= 0) {
+        enemy.hp = Math.max(0, enemy.hp - dmg);
         appendLine(
-          `target ${enemy.name} derezzed. +${enemy.xpReward} xp.`,
-          "info"
+            `you strike the ${enemy.name} for ${dmg} integrity damage.`,
+            "info"
         );
-        state.xp += enemy.xpReward;
-        state.encounter = null;
-        recalcLevel();
-        return;
-      }
 
-      enemyAttack();
+        if (enemy.hp <= 0) {
+            appendLine(
+                `target ${enemy.name} derezzed. +${enemy.xpReward} xp.`,
+                "info"
+            );
+            state.xp += enemy.xpReward;
+            state.encounter = null;
+            recalcLevel();
+            return;
+        }
+
+        enemyAttack();
     }
 
     function enemyAttack() {
-      const enemy = state.encounter;
-      if (!enemy) return;
+        const enemy = state.encounter;
+        if (!enemy) return;
 
-      const dmg =
-        enemy.dmgMin +
-        Math.floor(rand() * Math.max(1, enemy.dmgMax - enemy.dmgMin + 1));
+        const dmg =
+            enemy.dmgMin +
+            Math.floor(rand() * Math.max(1, enemy.dmgMax - enemy.dmgMin + 1));
 
-      state.health = Math.max(0, state.health - dmg);
-      damageFlash();
-      appendLine(
-        `${enemy.name} hits you for ${dmg} HP.`,
-        "error"
-      );
-      updateStatusHUD();
+        state.health = Math.max(0, state.health - dmg);
+        damageFlash();
+        appendLine(
+            `${enemy.name} hits you for ${dmg} HP.`,
+            "error"
+        );
+        updateStatusHUD();
 
-      if (state.health <= 0) {
-        handlePlayerDeath(enemy);
-      }
+        if (state.health <= 0) {
+            handlePlayerDeath(enemy);
+        }
     }
 
     function handlePlayerDeath(enemy) {
-      appendLine("", "system");
-      appendLine(
-        `fatal damage received from ${enemy.name}. connection lost...`,
-        "error"
-      );
-      appendLine("REBOOTING SHELL IN NEW SEED...", "system");
+        appendLine("", "system");
+        appendLine(
+            `fatal damage received from ${enemy.name}. connection lost...`,
+            "error"
+        );
+        appendLine("REBOOTING SHELL IN NEW SEED...", "system");
 
-      // hard reset player & world
-      initPlayer();
-      const newSeed = Math.floor(Math.random() * 0xffffffff);
-      generateWorld(newSeed);
-      state.encounter = null;
-      appendLine("", "system");
-      appendLine("// new shard compiled. you awaken somewhere else.", "system");
-      describeCurrentRoom();
+        // hard reset player & world
+        initPlayer();
+        const newSeed = Math.floor(Math.random() * 0xffffffff);
+        generateWorld(newSeed);
+        state.encounter = null;
+        appendLine("", "system");
+        appendLine("// new shard compiled. you awaken somewhere else.", "system");
+        describeCurrentRoom();
     }
 
     function attemptRun() {
-      const enemy = state.encounter;
-      if (!enemy) {
-        appendLine("no threat lock. nothing to run from.", "system");
-        return;
-      }
+        const enemy = state.encounter;
+        if (!enemy) {
+            appendLine("no threat lock. nothing to run from.", "system");
+            return;
+        }
 
-      const escapeChance = 0.5 + Math.min(0.3, state.level * 0.05); // 50–80%
-      if (rand() < escapeChance) {
-        appendLine("you slip into a side-channel and break line-of-sight. escaped.", "info");
-        state.encounter = null;
-        return;
-      }
+        const escapeChance = 0.5 + Math.min(0.3, state.level * 0.05); // 50–80%
+        if (rand() < escapeChance) {
+            appendLine("you slip into a side-channel and break line-of-sight. escaped.", "info");
+            state.encounter = null;
+            return;
+        }
 
-      appendLine("escape vector collapses. you're still locked in. brace…", "error");
-      enemyAttack();
+        appendLine("escape vector collapses. you're still locked in. brace…", "error");
+        enemyAttack();
     }
 
     function showStatus() {
-      const enemy = state.encounter;
-      appendLine(
-        `STATUS: HP ${state.health}/${state.maxHealth} | LVL ${state.level} | XP ${state.xp}`,
-        "system"
-      );
-      if (enemy) {
+        const enemy = state.encounter;
         appendLine(
-          `ENEMY: ${enemy.name} [${enemy.hp}/${enemy.maxHp}] | DMG ${enemy.dmgMin}-${enemy.dmgMax}`,
-          "system"
+            `STATUS: HP ${state.health}/${state.maxHealth} | LVL ${state.level} | XP ${state.xp}`,
+            "system"
         );
-      }
+        if (enemy) {
+            appendLine(
+                `ENEMY: ${enemy.name} [${enemy.hp}/${enemy.maxHp}] | DMG ${enemy.dmgMin}-${enemy.dmgMax}`,
+                "system"
+            );
+        }
     }
 
     // ---------- ROOM DESCRIPTION ----------
     function describeCurrentRoom() {
-      const room = currentRoom();
-      if (!room) return;
+        const room = currentRoom();
+        if (!room) return;
 
-      appendLine("", "system");
-      appendLine(`// node: ${room.name}`, "info");
-      appendLine(`// biome: ${room.biome}`, "system");
-      appendLine(room.desc, "system");
+        appendLine("", "system");
+        appendLine(`// node: ${room.name}`, "info");
+        appendLine(`// biome: ${room.biome}`, "system");
+        appendLine(room.desc, "system");
 
-      const exits = Object.keys(room.exits);
-      if (exits.length) {
-        appendLine("paths: " + exits.join(", "), "system");
-      } else {
-        appendLine("paths: none (dead sector)", "system");
-      }
+        const exits = Object.keys(room.exits);
+        if (exits.length) {
+            appendLine("paths: " + exits.join(", "), "system");
+        } else {
+            appendLine("paths: none (dead sector)", "system");
+        }
 
-      if (room.items && room.items.length) {
-        appendLine("loot: " + room.items.join(", "), "system");
-      }
+        if (room.items && room.items.length) {
+            appendLine("loot: " + room.items.join(", "), "system");
+        }
 
-      if (Math.random() < 0.35) {
-        appendLine(choice(eventsPool), "dim");
-      }
+        if (Math.random() < 0.35) {
+            appendLine(choice(eventsPool), "dim");
+        }
 
-      // chance of ambient encounter on entering a new node
-      if (!inEncounter() && rand() < 0.3) {
-        spawnEncounter("move");
-      }
+        // chance of ambient encounter on entering a new node
+        if (!inEncounter() && rand() < 0.3) {
+            spawnEncounter("move");
+        }
     }
 
     // ---------- COMMAND HANDLING ----------
     // ---------- SAVE / LOAD ----------
     function xorCipher(str, key = 93) {
-      return str.split("").map(c =>
-        String.fromCharCode(c.charCodeAt(0) ^ key)
-      ).join("");
+        return str.split("").map(c =>
+            String.fromCharCode(c.charCodeAt(0) ^ key)
+        ).join("");
     }
 
     function createSaveCode() {
-      const saveObj = {
-        seed: state.seed,
-        room: state.currentRoomId,
-        health: state.health,
-        maxHealth: state.maxHealth,
-        xp: state.xp,
-        level: state.level,
-        inventory: state.inventory
-      };
-      const encoded = xorCipher(JSON.stringify(saveObj));
-      return btoa(encoded);
+        const saveObj = {
+            seed: state.seed,
+            room: state.currentRoomId,
+            health: state.health,
+            maxHealth: state.maxHealth,
+            xp: state.xp,
+            level: state.level,
+            inventory: state.inventory
+        };
+        const encoded = xorCipher(JSON.stringify(saveObj));
+        return btoa(encoded);
     }
 
     function loadSaveCode(code) {
-      try {
-        const decoded = xorCipher(atob(code));
-        const obj = JSON.parse(decoded);
+        try {
+            const decoded = xorCipher(atob(code));
+            const obj = JSON.parse(decoded);
 
-        state.seed = obj.seed;
-        state.rng = mulberry32(obj.seed);
-        state.currentRoomId = obj.room;
-        state.health = obj.health;
-        state.maxHealth = obj.maxHealth;
-        state.xp = obj.xp;
-        state.level = obj.level;
-        state.inventory = obj.inventory || [];
-        state.encounter = null;
+            state.seed = obj.seed;
+            state.rng = mulberry32(obj.seed);
+            state.currentRoomId = obj.room;
+            state.health = obj.health;
+            state.maxHealth = obj.maxHealth;
+            state.xp = obj.xp;
+            state.level = obj.level;
+            state.inventory = obj.inventory || [];
+            state.encounter = null;
 
-        updateStatusHUD();
-        updateLocationLabel();
-        appendLine("save loaded successfully.", "info");
-        describeCurrentRoom();
-      } catch (e) {
-        appendLine("invalid savecode. corrupted or malformed.", "error");
-      }
+            updateStatusHUD();
+            updateLocationLabel();
+            appendLine("save loaded successfully.", "info");
+            describeCurrentRoom();
+        } catch (e) {
+            appendLine("invalid savecode. corrupted or malformed.", "error");
+        }
     }
+
     function handleCommand(raw) {
-      const inputLine = raw.trim();
-      if (!inputLine) return;
+        const inputLine = raw.trim();
+        if (!inputLine) return;
 
-      appendLine(`sys@void:~$ ${inputLine}`, "info");
+        appendLine(`sys@void:~$ ${inputLine}`, "info");
 
-      if (!state.booted) {
-        appendLine("system not fully online. wait for boot sequence to complete…", "dim");
-        return;
-      }
+        // tijdens boot-mode selectie
+        if (state.waitBootMode) {
+            const mode = inputLine.toLowerCase();
+            if (["safe", "overclock", "ghostline"].includes(mode)) {
+                state.bootMode = mode;
+                state.waitBootMode = false;
+                state.booted = true;
+                appendLine(`[BOOT] mode accepted: ${mode}`, "info");
+                describeCurrentRoom();
+            } else {
+                appendLine("invalid mode. choose: safe | overclock | ghostline", "error");
+            }
+            return;
+        }
 
-      const [cmd, ...rest] = inputLine.split(/\s+/);
-      const arg = rest.join(" ").toLowerCase();
+        if (!state.booted) {
+            appendLine("system not fully online. wait for boot sequence to complete…", "dim");
+            return;
+        }
 
-      // if in combat, only allow certain commands
-      if (inEncounter()) {
-        handleCombatCommand(cmd.toLowerCase(), arg);
-      } else {
-        handleNormalCommand(cmd.toLowerCase(), arg);
-      }
+        const [cmd, ...rest] = inputLine.split(/\s+/);
+        const arg = rest.join(" ").toLowerCase();
 
-      state.tick++;
+        // if in combat, only allow certain commands
+        if (inEncounter()) {
+            handleCombatCommand(cmd.toLowerCase(), arg);
+        } else {
+            handleNormalCommand(cmd.toLowerCase(), arg);
+        }
+
+        state.tick++;
     }
 
     function handleCombatCommand(cmd, arg) {
-      switch (cmd) {
-        case "attack":
-          playerAttack();
-          break;
-        case "run":
-          attemptRun();
-          break;
-        case "status":
-          showStatus();
-          break;
-        case "help":
-          appendLines(
-            [
-              "",
-              "combat protocols:",
-              "  attack       strike the hostile construct",
-              "  run          attempt to escape the encounter",
-              "  status       show your HP/xp and enemy status"
-            ],
-            "system"
-          );
-          break;
-        // allow some neutral commands
-        case "seed":
-          showSeed();
-          break;
-        default:
-          appendLine(
-            "lock-in: hostile engaged. use 'attack', 'run' or 'status'.",
-            "error"
-          );
-      }
+        switch (cmd) {
+            case "attack":
+                playerAttack();
+                break;
+            case "run":
+                attemptRun();
+                break;
+            case "status":
+                showStatus();
+                break;
+            case "help":
+                appendLines(
+                    [
+                        "",
+                        "combat protocols:",
+                        "  attack       strike the hostile construct",
+                        "  run          attempt to escape the encounter",
+                        "  status       show your HP/xp and enemy status"
+                    ],
+                    "system"
+                );
+                break;
+            // allow some neutral commands
+            case "seed":
+                showSeed();
+                break;
+            default:
+                appendLine(
+                    "lock-in: hostile engaged. use 'attack', 'run' or 'status'.",
+                    "error"
+                );
+        }
     }
 
     function handleNormalCommand(cmd, arg) {
-      switch (cmd) {
-        case "help":
-          showHelp();
-          break;
-        case "look":
-          describeCurrentRoom();
-          break;
-        case "where":
-          showPosition();
-          break;
-        case "go":
-        case "move":
-          move(arg);
-          break;
-        case "scan":
-          scanRoom();
-          break;
-        case "take":
-        case "grab":
-          takeItem(arg);
-          break;
-        case "inventory":
-        case "inv":
-          showInventory();
-          break;
-        case "seed":
-          showSeed();
-          break;
-        case "restart":
-          restartWorld();
-          break;
-        case "clear":
-          clearTerminal();
-          break;
-        case "status":
-          showStatus();
-          break;
-        // Save/load commands
-        case "save":
-          appendLine("savecode: " + createSaveCode(), "info");
-          break;
-        case "load":
-          if (!arg) {
-            appendLine("usage: load <savecode>", "system");
-          } else {
-            loadSaveCode(arg);
-          }
-          break;
-        // let player pre-emptively use combat commands (no-op if nothing)
-        case "attack":
-        case "run":
-          appendLine("no hostile signatures currently locked.", "system");
-          break;
-        default:
-          appendLine("unknown instruction. type 'help' for protocol list.", "error");
-      }
+        switch (cmd) {
+            case "help":
+                showHelp();
+                break;
+            case "look":
+                describeCurrentRoom();
+                break;
+            case "where":
+                showPosition();
+                break;
+            case "go":
+            case "move":
+                move(arg);
+                break;
+            case "scan":
+                scanRoom();
+                break;
+            case "take":
+            case "grab":
+                takeItem(arg);
+                break;
+            case "inventory":
+            case "inv":
+                showInventory();
+                break;
+            case "seed":
+                showSeed();
+                break;
+            case "restart":
+                restartWorld();
+                break;
+            case "clear":
+                clearTerminal();
+                break;
+            case "status":
+                showStatus();
+                break;
+            // Save/load commands
+            case "save":
+                appendLine("savecode: " + createSaveCode(), "info");
+                break;
+            case "load":
+                if (!arg) {
+                    appendLine("usage: load <savecode>", "system");
+                } else {
+                    loadSaveCode(arg);
+                }
+                break;
+            // let player pre-emptively use combat commands (no-op if nothing)
+            case "attack":
+            case "run":
+                appendLine("no hostile signatures currently locked.", "system");
+                break;
+            default:
+                appendLine("unknown instruction. type 'help' for protocol list.", "error");
+        }
     }
 
     function showHelp() {
-      appendLines(
-        [
-          "",
-          "available protocols:",
-          "  help           list this output",
-          "  look           describe your current node",
-          "  where          print node id and visible paths",
-          "  go <dir>       travel: north/south/east/west/up/down",
-          "  scan           scan area for anomalies / spawn loot or threats",
-          "  take <item>    acquire an item if present",
-          "  inventory      show collected items",
-          "  status         show HP / level / xp (and enemy if any)",
-          "  seed           print world seed",
-          "  restart        recompile world with new seed",
-          "  clear          clear terminal buffer",
-          "  save           generate password-based savecode",
-          "  load <code>    restore game state from savecode",
-          "",
-          "combat specials:",
-          "  attack         engage current hostile construct",
-          "  run            try to escape an encounter"
-        ],
-        "system"
-      );
+        appendLines(
+            [
+                "",
+                "available protocols:",
+                "  help           list this output",
+                "  look           describe your current node",
+                "  where          print node id and visible paths",
+                "  go <dir>       travel: north/south/east/west/up/down",
+                "  scan           scan area for anomalies / spawn loot or threats",
+                "  take <item>    acquire an item if present",
+                "  inventory      show collected items",
+                "  status         show HP / level / xp (and enemy if any)",
+                "  seed           print world seed",
+                "  restart        recompile world with new seed",
+                "  clear          clear terminal buffer",
+                "  save           generate password-based savecode",
+                "  load <code>    restore game state from savecode",
+                "",
+                "combat specials:",
+                "  attack         engage current hostile construct",
+                "  run            try to escape an encounter"
+            ],
+            "system"
+        );
     }
 
     function move(direction) {
-      const room = currentRoom();
-      if (!direction) {
-        appendLine("go where? e.g. `go north`", "system");
-        return;
-      }
-      const targetId = room.exits[direction];
-      if (!targetId) {
-        appendLine(`no path '${direction}' in this sector.`, "error");
-        return;
-      }
-      state.currentRoomId = targetId;
-      updateLocationLabel();
-      describeCurrentRoom();
+        const room = currentRoom();
+        if (!direction) {
+            appendLine("go where? e.g. `go north`", "system");
+            return;
+        }
+        const targetId = room.exits[direction];
+        if (!targetId) {
+            appendLine(`no path '${direction}' in this sector.`, "error");
+            return;
+        }
+        state.currentRoomId = targetId;
+        updateLocationLabel();
+        describeCurrentRoom();
     }
 
     function showPosition() {
-      const room = currentRoom();
-      appendLine(
-        `node: ${room.name} [${room.id}] | paths: ${Object.keys(room.exits).join(", ") || "none"}`,
-        "system"
-      );
+        const room = currentRoom();
+        appendLine(
+            `node: ${room.name} [${room.id}] | paths: ${Object.keys(room.exits).join(", ") || "none"}`,
+            "system"
+        );
     }
 
     function scanRoom() {
-      const roll = rand();
-      if (roll < 0.35) {
-        appendLine("scan: ambient noise only. nothing emergent.", "system");
-      } else if (roll < 0.7) {
-        appendLine(
-          "scan: ghost signatures detected in nearby subnets. no stable lock.",
-          "dim"
-        );
-      } else if (roll < 0.9) {
-        const newItem = choice(itemsPool);
-        currentRoom().items.push(newItem);
-        appendLine(
-          `scan anomaly: '${newItem}' phases into reality at your feet.`,
-          "info"
-        );
-      } else {
-        // trigger encounter via scan
-        spawnEncounter("scan");
-      }
+        const roll = rand();
+        if (roll < 0.35) {
+            appendLine("scan: ambient noise only. nothing emergent.", "system");
+        } else if (roll < 0.7) {
+            appendLine(
+                "scan: ghost signatures detected in nearby subnets. no stable lock.",
+                "dim"
+            );
+        } else if (roll < 0.9) {
+            const newItem = choice(itemsPool);
+            currentRoom().items.push(newItem);
+            appendLine(
+                `scan anomaly: '${newItem}' phases into reality at your feet.`,
+                "info"
+            );
+        } else {
+            // trigger encounter via scan
+            spawnEncounter("scan");
+        }
     }
 
     function takeItem(name) {
-      const room = currentRoom();
-      if (!name) {
-        appendLine("take what?", "system");
-        return;
-      }
-      const idx = room.items.findIndex((i) => i.toLowerCase() === name);
-      if (idx === -1) {
-        appendLine("no such item detected in this node.", "error");
-        return;
-      }
-      const item = room.items.splice(idx, 1)[0];
-      state.inventory.push(item);
-      appendLine(`acquired: ${item}`, "info");
+        const room = currentRoom();
+        if (!name) {
+            appendLine("take what?", "system");
+            return;
+        }
+        const idx = room.items.findIndex((i) => i.toLowerCase() === name);
+        if (idx === -1) {
+            appendLine("no such item detected in this node.", "error");
+            return;
+        }
+        const item = room.items.splice(idx, 1)[0];
+        state.inventory.push(item);
+        appendLine(`acquired: ${item}`, "info");
     }
 
     function showInventory() {
-      if (!state.inventory.length) {
-        appendLine("inventory: empty // no contraband logged.", "system");
-        return;
-      }
-      appendLine("inventory manifest:", "system");
-      state.inventory.forEach((i) => appendLine("  - " + i, "system"));
+        if (!state.inventory.length) {
+            appendLine("inventory: empty // no contraband logged.", "system");
+            return;
+        }
+        appendLine("inventory manifest:", "system");
+        state.inventory.forEach((i) => appendLine("  - " + i, "system"));
     }
 
     function showSeed() {
-      appendLine("world-seed: " + state.seed.toString(16), "system");
+        appendLine("world-seed: " + state.seed.toString(16), "system");
     }
 
     function restartWorld() {
-      const newSeed = Math.floor(Math.random() * 0xffffffff);
-      appendLine("", "system");
-      appendLine("// recompiling world with seed: " + newSeed.toString(16), "info");
-      generateWorld(newSeed);
-      state.encounter = null;
-      describeCurrentRoom();
+        const newSeed = Math.floor(Math.random() * 0xffffffff);
+        appendLine("", "system");
+        appendLine("// recompiling world with seed: " + newSeed.toString(16), "info");
+        generateWorld(newSeed);
+        state.encounter = null;
+        describeCurrentRoom();
     }
 
     // ---------- BOOT SEQUENCE & ASCII ART ----------
-    const bannerLines = [
-"   ____      _               __          __           _ ",
-"  / ___|   _| |__   ___ _ __ \\ \\        / /__  _ __ __| |",
-" | |  | | | | '_ \\ / _ \\ '_ \\ \\ \\ /\\ / / _ \\| '__/ _` |",
-" | |__| |_| | |_) |  __/ | | | \\ V  V / (_) | | | (_| |",
-"  \\____\\__,_|_.__/ \\___|_| |_|  \\_/\\_/ \\___/|_|  \\__,_|",
-"                —= CYBERWORLD TERMINAL =—"
-    ];
+    // ---------- BOOT SEQUENCE & ASCII ART ----------
+    function getBannerLines() {
+        const seedHex = state.seed ? state.seed.toString(16) : "unknown";
+        return [
+            "   ____      _               __          __           _ ",
+            "  / ___|   _| |__   ___ _ __ \\ \\        / /__  _ __ __| |",
+            " | |  | | | | '_ \\ / _ \\ '_ \\ \\ \\ /\\ / / _ \\| '__/ _` |",
+            " | |__| |_| | |_) |  __/ | | | \\ V  V / (_) | | | (_| |",
+            "  \\____\\__,_|_.__/ \\___|_| |_|  \\_/\\_/ \\___/|_|  \\__,_|",
+            "                —= CYBERWORLD TERMINAL =—",
+            "",
+            `                [seed signature: ${seedHex}]`,
+            ""
+        ];
+    }
 
     const bootLines = [
-      "",
-      "[BOOT] initializing neon runtime... [####------] 40%",
-      "[BOOT] calibrating optic-lattice arrays... [#####-----] 50%",
-      "[BOOT] mounting undergrid filesystems... [######----] 60%",
-      "[BOOT] linking phantom network interfaces... [########--] 80%",
-      "[BOOT] seeding procedural cityscape... [#########-] 90%",
-      "[BOOT] injecting ghostlines into routing mesh...",
-      "[BOOT] verifying integrity of shard clusters...",
-      "[OK]   world compiled. user shell attached.",
-      "",
-      "type 'help' to query available protocols."
+        "",
+        "[BOOT] initializing neon runtime... [####------] 40%",
+        "[BOOT] calibrating optic-lattice arrays... [#####-----] 50%",
+        "[BOOT] mounting undergrid filesystems... [######----] 60%",
+        "[BOOT] linking phantom network interfaces... [########--] 80%",
+        "[BOOT] seeding procedural cityscape... [#########-] 90%",
+        "[BOOT] injecting ghostlines into routing mesh...",
+        "[BOOT] verifying integrity of shard clusters...",
+        "[OK]   world compiled. user shell attached.",
+        "",
+        "type 'help' to query available protocols."
     ];
 
     function runBootSequence() {
-      clearTerminal();
-      state.booted = false;
-      let idx = 0;
+        clearTerminal();
+        state.booted = false;
+        state.waitBootMode = false;
+        let idx = 0;
 
-      bannerLines.forEach((l) => appendLine(l, "banner"));
-      appendLine("", "system");
+        getBannerLines().forEach((l) => appendLine(l, "banner"));
+        appendLine("", "system");
 
-      function nextBootLine() {
-        if (idx >= bootLines.length) {
-          state.booted = true;
-          describeCurrentRoom();
-          appendLine("", "system");
-          return;
+        function nextBootLine() {
+            if (idx >= bootLines.length) {
+                appendLine("", "system");
+                appendLines(
+                    [
+                        "[BOOT] select startup mode:",
+                        "  safe       — minimal encounter probability",
+                        "  overclock  — increased damage + increased danger",
+                        "  ghostline  — unstable reality, high anomalies",
+                        "",
+                        "enter mode: safe | overclock | ghostline"
+                    ],
+                    "system"
+                );
+
+                state.waitBootMode = true;
+                return;
+            }
+            appendLine(bootLines[idx], "system");
+            idx++;
+            setTimeout(nextBootLine, 220);
         }
-        appendLine(bootLines[idx], "system");
-        idx++;
-        setTimeout(nextBootLine, 220);
-      }
 
-      setTimeout(nextBootLine, 260);
+        setTimeout(nextBootLine, 260);
     }
 
     // ---------- INITIALIZE ----------
     function boot() {
-      initPlayer();
-      const seed = Math.floor(Math.random() * 0xffffffff);
-      generateWorld(seed);
-      runBootSequence();
-      input.focus();
+        initPlayer();
+        const seed = Math.floor(Math.random() * 0xffffffff);
+        generateWorld(seed);
+        runBootSequence();
+        input.focus();
     }
 
     function damageFlash() {
-      const fx = document.createElement("div");
-      fx.className = "damage-flash";
-      document.body.appendChild(fx);
-      setTimeout(() => fx.remove(), 200);
+        const fx = document.createElement("div");
+        fx.className = "damage-flash";
+        document.body.appendChild(fx);
+        setTimeout(() => fx.remove(), 200);
     }
 
     input.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") {
-        const value = input.value;
-        input.value = "";
-        handleCommand(value);
-      } else if (e.key === "l" && e.ctrlKey) {
-        e.preventDefault();
-        clearTerminal();
-      }
+        if (e.key === "Enter") {
+            const value = input.value;
+            input.value = "";
+            handleCommand(value);
+        } else if (e.key === "l" && e.ctrlKey) {
+            e.preventDefault();
+            clearTerminal();
+        }
     });
 
     window.addEventListener("load", boot);
-  </script>
+</script>
 </body>
 </html>
