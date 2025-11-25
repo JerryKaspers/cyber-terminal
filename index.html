@@ -264,59 +264,6 @@
       animation: blink 1s step-start infinite;
     }
 
-    #floatingHud {
-      position: fixed;
-      top: 12px;
-      right: 12px;
-      z-index: 10;
-      backdrop-filter: blur(6px);
-      padding: 10px 14px;
-      background: rgba(3, 7, 18, 0.55);
-      border: 1px solid rgba(93, 242, 255, 0.35);
-      border-radius: 8px;
-      box-shadow: 0 0 12px rgba(93, 242, 255, 0.35);
-      color: var(--accent-strong);
-      width: 160px;
-    }
-
-    .hud-bar {
-      margin-bottom: 8px;
-    }
-
-    .hud-bar label {
-      font-size: 10px;
-      text-transform: uppercase;
-      opacity: 0.85;
-    }
-
-    .bar {
-      width: 100%;
-      height: 10px;
-      background: rgba(255,255,255,0.08);
-      border-radius: 4px;
-      overflow: hidden;
-      margin-top: 3px;
-    }
-
-    .bar .fill {
-      height: 100%;
-      width: 0%;
-      transition: width 0.25s ease-out;
-    }
-
-    .bar.hp .fill {
-      background: linear-gradient(90deg, #2affd3, #00ffaa);
-    }
-
-    .bar.xp .fill {
-      background: linear-gradient(90deg, #7d5bff, #5df2ff);
-    }
-
-    .hud-info {
-      font-size: 12px;
-      text-align: right;
-      margin-top: 6px;
-    }
 
     .damage-flash {
       position: fixed;
@@ -344,19 +291,6 @@
   </style>
 </head>
 <body>
-  <div id="floatingHud">
-    <div class="hud-bar">
-      <label>HP</label>
-      <div class="bar hp"><div class="fill" id="hpFill"></div></div>
-    </div>
-    <div class="hud-bar">
-      <label>XP</label>
-      <div class="bar xp"><div class="fill" id="xpFill"></div></div>
-    </div>
-    <div class="hud-info">
-      <span id="hudLevel"></span>
-    </div>
-  </div>
   <div class="hud-overlay"></div>
   <div class="hud-glow"></div>
 
@@ -462,14 +396,6 @@
       if (!statusLabel) return;
       statusLabel.textContent =
         `HP ${state.health}/${state.maxHealth} | LVL ${state.level} | XP ${state.xp}`;
-
-      document.getElementById("hpFill").style.width =
-        (state.health / state.maxHealth * 100) + "%";
-
-      document.getElementById("xpFill").style.width =
-        (state.xp % 30) / 30 * 100 + "%";
-
-      document.getElementById("hudLevel").textContent = "LVL " + state.level;
     }
 
     function initPlayer() {
@@ -1090,22 +1016,23 @@
 
     // ---------- BOOT SEQUENCE & ASCII ART ----------
     const bannerLines = [
-"   ██████╗ ██╗   ██╗██████╗ ███████╗██████╗ ██╗    ██╗ ██████╗ ██████╗ ██╗     ██████╗ ",
-"   ██╔══██╗██║   ██║██╔══██╗██╔════╝██╔══██╗██║    ██║██╔═══██╗██╔══██╗██║     ██╔══██╗",
-"   ██████╔╝██║   ██║██████╔╝█████╗  ██████╔╝██║ █╗ ██║██║   ██║██████╔╝██║     ██║  ██║",
-"   ██╔═══╝ ██║   ██║██╔══██╗██╔══╝  ██╔══██╗██║███╗██║██║   ██║██╔══██╗██║     ██║  ██║",
-"   ██║     ╚██████╔╝██║  ██║███████╗██║  ██║╚███╔███╔╝╚██████╔╝██████╔╝███████╗██████╔╝",
-"   ╚═╝      ╚═════╝ ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝ ╚══╝╚══╝  ╚═════╝ ╚═════╝ ╚══════╝╚═════╝ "
+"   ____      _               __          __           _ ",
+"  / ___|   _| |__   ___ _ __ \\ \\        / /__  _ __ __| |",
+" | |  | | | | '_ \\ / _ \\ '_ \\ \\ \\ /\\ / / _ \\| '__/ _` |",
+" | |__| |_| | |_) |  __/ | | | \\ V  V / (_) | | | (_| |",
+"  \\____\\__,_|_.__/ \\___|_| |_|  \\_/\\_/ \\___/|_|  \\__,_|",
+"                —= CYBERWORLD TERMINAL =—"
     ];
 
     const bootLines = [
       "",
-      "[BOOT] initializing neon runtime...",
-      "[BOOT] mounting undergrid filesystems...",
-      "[BOOT] linking phantom network interfaces...",
-      "[BOOT] seeding procedural cityscape...",
+      "[BOOT] initializing neon runtime... [####------] 40%",
+      "[BOOT] calibrating optic-lattice arrays... [#####-----] 50%",
+      "[BOOT] mounting undergrid filesystems... [######----] 60%",
+      "[BOOT] linking phantom network interfaces... [########--] 80%",
+      "[BOOT] seeding procedural cityscape... [#########-] 90%",
       "[BOOT] injecting ghostlines into routing mesh...",
-      "[BOOT] bringing nodes online...",
+      "[BOOT] verifying integrity of shard clusters...",
       "[OK]   world compiled. user shell attached.",
       "",
       "type 'help' to query available protocols."
