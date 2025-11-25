@@ -814,6 +814,13 @@ state.story = {
             world[id].type = "normal";
         });
 
+        // assign faction story nodes
+        const factionTypes = ["ghostline", "mirrorshade", "syntech"];
+        factionTypes.forEach(f => {
+            const id = choice(roomIds);
+            world[id].type = "faction_" + f;
+        });
+
         // assign a few story nodes
         const storyCount = 2;
         for (let s = 0; s < storyCount; s++) {
@@ -907,6 +914,53 @@ state.story = {
         return !!state.encounter;
     }
 
+    // ---------- FACTION-BASED ENCOUNTER OVERRIDES ----------
+    function generateFactionEnemy() {
+        const aligned = state.story.flags.alignedFaction;
+        const rep = state.story.factions;
+
+        // if faction hates you (rep < -15) 15% chance for special enemy
+        if (!aligned || rand() > 0.15) return null;
+
+        if (rep.mirrorshade < -15) {
+            return {
+                name: "MIRRORSHADE STRIDER",
+                tier: 3,
+                maxHp: 45,
+                hp: 45,
+                dmgMin: 8,
+                dmgMax: 14,
+                xpReward: 32
+            };
+        }
+
+        if (rep.ghostline < -15) {
+            return {
+                name: "GHOSTLINE PHANTOM",
+                tier: 3,
+                maxHp: 38,
+                hp: 38,
+                dmgMin: 7,
+                dmgMax: 13,
+                xpReward: 30
+            };
+        }
+
+        if (rep.syntech < -15) {
+            return {
+                name: "SYNTECH HOUND UNIT",
+                tier: 3,
+                maxHp: 50,
+                hp: 50,
+                dmgMin: 9,
+                dmgMax: 15,
+                xpReward: 36
+            };
+        }
+
+        return null;
+    }
+
     function generateEnemy() {
         const adjectives = [
             "glitched",
@@ -985,7 +1039,8 @@ state.story = {
     function spawnEncounter(source = "ambient") {
         if (inEncounter()) return;
 
-        const enemy = generateEnemy();
+        const factionEnemy = generateFactionEnemy();
+        const enemy = factionEnemy || generateEnemy();
         state.encounter = enemy;
 
         appendLine("", "system");
@@ -1202,6 +1257,23 @@ state.story = {
             advanceStory(5);
         }
 
+        // faction story nodes
+        if (room.type && room.type.startsWith("faction_")) {
+            const f = room.type.replace("faction_", "");
+            appendLine("", "system");
+            appendLine(`[FACTION NODE DETECTED: ${f}]`, "info");
+
+            if (state.story.flags.alignedFaction === f) {
+                appendLine("your allegiance resonates with this node.", "system");
+                appendLine("the grid folds and offers insight…", "system");
+                adjustFactionRep(f, 5);
+                advanceStory(3);
+            } else {
+                appendLine("your signature conflicts with the node’s resonance.", "error");
+                appendLine("progress blocked. align with this faction to access deeper paths.", "dim");
+            }
+        }
+
         // NPC encounter chance
         const npc = spawnNPCIfEligible();
         if (npc) {
@@ -1237,6 +1309,39 @@ state.story = {
         // chance of ambient encounter on entering a new node
         if (!inEncounter() && rand() < 0.12) {
             spawnEncounter("move");
+        }
+
+        // --- FINAL NODE / ENDING HANDLER (D5) ---
+        if (state.story.mainProgress >= 100 && !state.story.flags.endingTriggered) {
+            state.story.flags.endingTriggered = true;
+
+            appendLine("", "system");
+            appendLine("[FINAL NODE REACHED]", "info");
+
+            const aligned = state.story.flags.alignedFaction;
+
+            if (aligned === "ghostline") {
+                appendLine("GHOSTLINE ENDING:", "banner");
+                appendLine("you dissolve into the undergrid, becoming a myth whispered by broken routers.", "system");
+            } else if (aligned === "mirrorshade") {
+                appendLine("MIRRORSHADE ENDING:", "banner");
+                appendLine("the mirrors crack—yet through their reflection you reshape the neonverse.", "system");
+            } else if (aligned === "syntech") {
+                appendLine("SYNTECH ENDING:", "banner");
+                appendLine("your shard uplinks to the core. syntech logs you as 'acceptable anomaly'.", "system");
+            } else {
+                appendLine("NEUTRAL ENDING:", "banner");
+                appendLine("you walk beyond the final node—unaligned, unclaimed, unseen.", "system");
+            }
+
+            appendLine("", "system");
+            appendLine("the city resets. your shell reboots.", "info");
+
+            initPlayer();
+            const newSeed = Math.floor(Math.random() * 0xffffffff);
+            generateWorld(newSeed);
+            appendLine("// new recursion begins.", "system");
+            describeCurrentRoom();
         }
     }
 
