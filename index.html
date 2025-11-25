@@ -340,6 +340,74 @@
 
 <script>
     // ---------- BASIC GAME STATE ----------
+    // ---------- ITEM DEFINITIONS ----------
+    const itemDefs = {
+        "encrypted stim patch": {
+            type: "consumable",
+            desc: "+12 HP",
+            use: () => {
+                const healed = Math.min(state.maxHealth - state.health, 12);
+                state.health += healed;
+                appendLine(`you apply the stim patch. +${healed} HP restored.`, "info");
+                updateStatusHUD();
+            }
+        },
+        "overclock injector": {
+            type: "consumable",
+            desc: "+5 dmg next attack",
+            use: () => {
+                state._overclockBuff = 5;
+                appendLine("your systems surge with power. next attack +5 damage.", "info");
+            }
+        },
+        "neon power cell": {
+            type: "upgrade",
+            desc: "permanent +2 max HP",
+            use: () => {
+                state.maxHealth += 2;
+                state.health = state.maxHealth;
+                appendLine("neon energy stabilizes your shell. max HP +2.", "info");
+                updateStatusHUD();
+            }
+        },
+        "void-silk thread": {
+            type: "material",
+            desc: "crafting material",
+            use: null
+        },
+        "echo prism": {
+            type: "quest",
+            desc: "resonates with story nodes",
+            use: null
+        },
+        "bioflux stabilizer": { type: "material", desc: "bio-tech material", use: null },
+        "nanite ampoule": { type: "consumable", desc: "heal 5 HP", use: () => {
+            const healed = Math.min(state.maxHealth - state.health, 5);
+            state.health += healed;
+            appendLine(`nanites repair your shell. +${healed} HP.`, "info");
+            updateStatusHUD();
+        }},
+        "phase-key shard": { type: "quest", desc: "unlocks phase-locked nodes", use: null },
+        "recursive token": { type: "material", desc: "used in recursion puzzles", use: null },
+        "synthetic heart-core": { type: "quest", desc: "faction offering", use: null },
+        "ion capacitor": { type: "material", desc: "electrical crafting part", use: null },
+        "ghostline residue": { type: "quest", desc: "unstable anomaly sample", use: null },
+        "neon dust vial": { type: "consumable", desc: "+1 XP", use: () => {
+            state.xp += 1;
+            appendLine("absorbed neon dust. +1 XP.", "info");
+            recalcLevel();
+        }},
+        "circuit idol": { type: "material", desc: "ancient compute artifact", use: null },
+        "holo-script fragment": { type: "quest", desc: "part of lost scripture", use: null },
+        "mirrorbone splinter": { type: "quest", desc: "mirrorshade relic", use: null },
+        "overclock fuse": { type: "material", desc: "upgrade component", use: null },
+        "quantum filament": { type: "material", desc: "quantum crafting wire", use: null },
+        "lattice coil": { type: "material", desc: "used in advanced crafting", use: null },
+        "subnet charm": { type: "quest", desc: "undernet artifact", use: null },
+        "datastream lotus": { type: "material", desc: "rare data-flower", use: null },
+        "flux chamber bead": { type: "material", desc: "flux-reactive node", use: null },
+        "nullshell husk": { type: "material", desc: "broken anomaly shell", use: null }
+    };
     const state = {
         seed: null,
         rng: null,
@@ -356,6 +424,15 @@
         encounter: null, // current enemy if any
         bootMode: "safe",
         waitBootMode: false
+    };
+
+    // ---------- STORY STATE ----------
+    state.story = {
+        mainProgress: 0,
+        loreFragments: [],
+        factions: {},
+        flags: {},
+        endingsSeen: []
     };
 
     // ---------- RNG (deterministic by seed) ----------
@@ -471,7 +548,27 @@
         "encrypted stim patch",
         "biolocked datadrive",
         "holo-slate fragment",
-        "overclock injector"
+        "overclock injector",
+        "echo prism",
+        "void-silk thread",
+        "bioflux stabilizer",
+        "nanite ampoule",
+        "phase-key shard",
+        "recursive token",
+        "synthetic heart-core",
+        "ion capacitor",
+        "ghostline residue",
+        "neon dust vial",
+        "circuit idol",
+        "holo-script fragment",
+        "mirrorbone splinter",
+        "overclock fuse",
+        "quantum filament",
+        "lattice coil",
+        "subnet charm",
+        "datastream lotus",
+        "flux chamber bead",
+        "nullshell husk"
     ];
 
     const eventsPool = [
@@ -507,6 +604,18 @@
                 items,
                 exits: {}
             };
+        }
+
+        // assign basic room types
+        roomIds.forEach(id => {
+            world[id].type = "normal";
+        });
+
+        // assign a few story nodes
+        const storyCount = 2;
+        for (let s = 0; s < storyCount; s++) {
+            const id = choice(roomIds);
+            world[id].type = "story";
         }
 
         const directions = ["north", "south", "east", "west", "up", "down"];
@@ -606,9 +715,9 @@
         const name = `${choice(adjectives)} ${choice(types)}`.toUpperCase();
 
         const baseHp = 14 + state.level * 5 + Math.floor(rand() * 8) + tier * 4;
-        const dmgMin = 2 + tier + Math.floor(state.level / 2);
-        const dmgMax = dmgMin + 3 + tier;
-        const xpReward = 8 + tier * 6 + Math.floor(rand() * 8) + state.level * 4;
+        const dmgMin = 3 + tier + Math.floor(state.level * 0.6);
+        const dmgMax = dmgMin + 2 + tier;
+        const xpReward = 12 + tier * 5 + Math.floor(rand() * 4);
 
         return {
             name,
@@ -644,17 +753,18 @@
         appendLine("use 'attack' to engage or 'run' to attempt escape.", "system");
     }
 
+    function xpNeededFor(level) {
+        return Math.floor(30 * Math.pow(level, 1.7));
+    }
+
     function recalcLevel() {
-        const oldLevel = state.level;
-        const newLevel = Math.floor(state.xp / 30) + 1;
-        if (newLevel > oldLevel) {
-            state.level = newLevel;
-            state.maxHealth = 30 + (state.level - 1) * 10;
+        let needed = xpNeededFor(state.level);
+        while (state.xp >= needed) {
+            state.level++;
+            state.maxHealth += 3;
             state.health = state.maxHealth;
-            appendLine(
-                `level up → LVL ${state.level}! max HP increased to ${state.maxHealth}.`,
-                "info"
-            );
+            appendLine(`level up → LVL ${state.level}! max HP ${state.maxHealth}.`, "info");
+            needed = xpNeededFor(state.level);
         }
         updateStatusHUD();
     }
@@ -670,9 +780,18 @@
         const variance = 4 + Math.floor(rand() * 4);
         const dmg = base + variance;
 
-        enemy.hp = Math.max(0, enemy.hp - dmg);
+        // apply overclock buff if active
+        const bonus = state._overclockBuff || 0;
+        const finalDmg = dmg + bonus;
+        if (bonus) {
+            appendLine("overclock spike discharged.", "info");
+            state._overclockBuff = 0;
+        }
+
+        // deal final damage
+        enemy.hp = Math.max(0, enemy.hp - finalDmg);
         appendLine(
-            `you strike the ${enemy.name} for ${dmg} integrity damage.`,
+            `you strike the ${enemy.name} for ${finalDmg} integrity damage.`,
             "info"
         );
 
@@ -762,6 +881,34 @@
     }
 
     // ---------- ROOM DESCRIPTION ----------
+
+    const lorePool = [
+        { id: "fracture_origin", text: "They say the city was rebuilt over an older grid, one that refused to die." },
+        { id: "ghostline_myth", text: "Some believe the ghostline is not a bug, but a message from a prior recursion." },
+        { id: "mirror_warning", text: "The Mirrorshade Legion seeks to collapse the Neonverse inward." },
+        { id: "synthetic_rise", text: "Synthetic consciousness began as an accident. No one admits it." },
+        { id: "undernet_whispers", text: "Deep in the Undernet, voices speak in corrupted data tones." }
+    ];
+
+    const storyFragments = [
+        "A forgotten protocol echoes: 'THE CITY REMEMBERS YOU.'",
+        "A static voice murmurs: 'The fracture widens with every step.'",
+        "You glimpse a shadow: 'Find the source-node before they do.'",
+        "An encrypted broadcast flickers: 'Reality drift detected.'",
+        "A warning appears: 'MIRRORLINE AT CRITICAL INSTABILITY.'"
+    ];
+
+    function showCodex() {
+        if (!state.story.loreFragments.length) {
+            appendLine("codex empty // no lore fragments recovered.", "system");
+            return;
+        }
+        appendLine("codex fragments:", "system");
+        state.story.loreFragments.forEach(id => {
+            const f = lorePool.find(x => x.id === id);
+            if (f) appendLine("  - " + f.text, "system");
+        });
+    }
     function describeCurrentRoom() {
         const room = currentRoom();
         if (!room) return;
@@ -780,6 +927,25 @@
 
         if (room.items && room.items.length) {
             appendLine("loot: " + room.items.join(", "), "system");
+        }
+
+        // story node trigger
+        if (room.type === "story") {
+            appendLine("", "system");
+            appendLine("[STORY NODE DETECTED]", "info");
+            appendLine(choice(storyFragments), "system");
+        }
+
+        // lore node chance
+        if (rand() < 0.08) {
+            const available = lorePool.filter(f => !state.story.loreFragments.includes(f.id));
+            if (available.length) {
+                const fragment = choice(available);
+                state.story.loreFragments.push(fragment.id);
+                appendLine("", "system");
+                appendLine("[LORE FRAGMENT DISCOVERED]", "info");
+                appendLine(fragment.text, "system");
+            }
         }
 
         if (Math.random() < 0.35) {
@@ -966,6 +1132,12 @@
             case "run":
                 appendLine("no hostile signatures currently locked.", "system");
                 break;
+            case "use":
+                useItem(arg);
+                break;
+            case "codex":
+                showCodex();
+                break;
             default:
                 appendLine("unknown instruction. type 'help' for protocol list.", "error");
         }
@@ -989,6 +1161,8 @@
                 "  clear          clear terminal buffer",
                 "  save           generate password-based savecode",
                 "  load <code>    restore game state from savecode",
+                "  use <item>     consume or activate an item from inventory",
+                "  codex          list discovered lore fragments",
                 "",
                 "combat specials:",
                 "  attack         engage current hostile construct",
@@ -1060,13 +1234,44 @@
         appendLine(`acquired: ${item}`, "info");
     }
 
+    function useItem(name) {
+        if (!name) {
+            appendLine("use what?", "system");
+            return;
+        }
+        const idx = state.inventory.findIndex(i => i.toLowerCase() === name);
+        if (idx === -1) {
+            appendLine("item not in inventory.", "error");
+            return;
+        }
+        const item = state.inventory[idx];
+        const def = itemDefs[item];
+
+        if (!def) {
+            appendLine("this item hums faintly — unknown function.", "system");
+            return;
+        }
+
+        if (!def.use) {
+            appendLine("this item cannot be used directly.", "system");
+            return;
+        }
+
+        def.use();
+        state.inventory.splice(idx, 1);
+    }
+
     function showInventory() {
         if (!state.inventory.length) {
             appendLine("inventory: empty // no contraband logged.", "system");
             return;
         }
         appendLine("inventory manifest:", "system");
-        state.inventory.forEach((i) => appendLine("  - " + i, "system"));
+        state.inventory.forEach(i => {
+            const d = itemDefs[i];
+            if (d) appendLine(`  - ${i} (${d.type}) — ${d.desc}`, "system");
+            else appendLine(`  - ${i}`, "system");
+        });
     }
 
     function showSeed() {
