@@ -427,13 +427,216 @@
     };
 
     // ---------- STORY STATE ----------
-    state.story = {
-        mainProgress: 0,
-        loreFragments: [],
-        factions: {},
-        flags: {},
-        endingsSeen: []
-    };
+state.story = {
+    mainProgress: 0,
+    loreFragments: [],
+    factions: {
+        ghostline: 0,
+        mirrorshade: 0,
+        syntech: 0
+    },
+    flags: {},
+    endingsSeen: []
+};
+
+    // ---------- STORY PROGRESSION ENGINE ----------
+    function advanceStory(amount = 1) {
+        state.story.mainProgress = Math.min(100, state.story.mainProgress + amount);
+
+        appendLine(
+            `[story-thread updated] progress: ${state.story.mainProgress}%`,
+            "info"
+        );
+
+        // milestone triggers
+        if (state.story.mainProgress === 20) {
+            appendLine("a low-frequency pulse hums through the undergrid… something shifts.", "system");
+        }
+        if (state.story.mainProgress === 30) {
+            factionBroadcast("p30");
+        }
+        if (state.story.mainProgress === 40) {
+            appendLine("the neon haze thickens. distant alarms echo across the district.", "system");
+        }
+        if (state.story.mainProgress === 50) {
+            factionBroadcast("p50");
+        }
+        if (state.story.mainProgress === 60) {
+            appendLine("your HUD glitches momentarily: // reality drift increasing", "error");
+        }
+        if (state.story.mainProgress === 70) {
+            factionBroadcast("p70");
+        }
+        if (state.story.mainProgress === 80) {
+            appendLine("a fractured silhouette appears in your periphery. the source-node is near.", "system");
+        }
+        if (state.story.mainProgress === 100) {
+            appendLine("[!] story-thread: maximum stability breach reached", "error");
+            appendLine("the city waits for you at the final node…", "system");
+        }
+    }
+
+    // ---------- FACTION ENGINE ----------
+    function adjustFactionRep(faction, amount) {
+        if (!state.story.factions[faction] && state.story.factions[faction] !== 0) return;
+        state.story.factions[faction] = Math.max(-100, Math.min(100, state.story.factions[faction] + amount));
+        appendLine(`[FACTION] ${faction} reputation: ${state.story.factions[faction]}`, "info");
+    }
+
+    // ---------- FACTION ALIGNMENT ----------
+    function alignFaction(f) {
+        const valid = ["ghostline", "mirrorshade", "syntech"];
+        if (!valid.includes(f)) {
+            appendLine("invalid faction. choose: ghostline | mirrorshade | syntech", "error");
+            return;
+        }
+        state.story.flags.alignedFaction = f;
+
+        // reputation shifts
+        adjustFactionRep(f, 10);
+        valid.forEach(other => {
+            if (other !== f) adjustFactionRep(other, -5);
+        });
+
+        appendLine(`[ALIGNMENT] allegiance set: ${f}`, "info");
+    }
+
+    // ---------- FACTION BROADCASTS ----------
+    function factionBroadcast(type) {
+        const aligned = state.story.flags.alignedFaction;
+        const rep = state.story.factions;
+
+        let msg = "";
+
+        if (type === "p30") {
+            if (aligned === "ghostline") {
+                msg = "[GHOSTLINE WHISPER] \"your signal drifts… but we see your intent.\"";
+            } else if (aligned === "mirrorshade") {
+                msg = "[MIRRORSHADE BROADCAST] \"the city bends. so will you.\"";
+            } else if (aligned === "syntech") {
+                msg = "[SYNTECH NOTICE] \"alignment detected. monitoring output.\"";
+            } else {
+                msg = "[SYSTEM BROADCAST] a distant transmission flickers across channels.";
+            }
+        }
+
+        if (type === "p50") {
+            if (rep.mirrorshade > 15) {
+                msg = "[MIRRORSHADE PRIORITY FEED] \"you walk clean through the fracture. impressive.\"";
+            } else if (rep.ghostline > 15) {
+                msg = "[GHOSTLINE ECHO] \"mirrors crumble before intuition. continue.\"";
+            } else if (rep.syntech > 15) {
+                msg = "[SYNTECH ALERT] \"stability rising. you fit their model.\"";
+            } else {
+                msg = "[CIVIC INTERCEPT] static-laced warnings swirl in the undernet.";
+            }
+        }
+
+        if (type === "p70") {
+            if (aligned === "mirrorshade") {
+                msg = "[MIRRORSHADE ENCRYPT] \"ready yourself. the pivot comes soon.\"";
+            } else if (aligned === "ghostline") {
+                msg = "[GHOSTLINE BREACH] \"they close in. stay off the mirrorline.\"";
+            } else if (aligned === "syntech") {
+                msg = "[SYNTECH DIAGNOSTIC] \"your shard shows stress anomalies. proceed.\"";
+            } else {
+                msg = "[NEONVERSE ALERT] instability spike detected across districts.";
+            }
+        }
+
+        if (msg) appendLine(msg, "info");
+    }
+
+    // ---------- CHOICE EVENTS ENGINE ----------
+    const choiceEventDefs = [
+        {
+            id: "syntech_prism_demand",
+            faction: "syntech",
+            minProgress: 35,
+            requiresItem: "echo prism",
+            prompt: "[SYNTECH DIRECTIVE] \"Deliver the Echo Prism for stability analysis.\"",
+            options: {
+                comply: {
+                    text: "You hand over the Echo Prism.",
+                    rep: { syntech: +10, mirrorshade: -4, ghostline: -4 },
+                    removeItem: "echo prism",
+                    flag: "syntech_prism=comply"
+                },
+                refuse: {
+                    text: "You refuse Syntech’s demand.",
+                    rep: { syntech: -10 },
+                    flag: "syntech_prism=refuse"
+                }
+            }
+        }
+    ];
+
+    function spawnChoiceEvent() {
+        const prog = state.story.mainProgress;
+        const aligned = state.story.flags.alignedFaction;
+        const inv = state.inventory;
+
+        const eligible = choiceEventDefs.filter(e => {
+            if (prog < e.minProgress) return false;
+            if (e.requiresItem && !inv.includes(e.requiresItem)) return false;
+            return true;
+        });
+
+        if (!eligible.length) return null;
+        if (rand() < 0.15) return choice(eligible);
+        return null;
+    }
+
+    function triggerChoiceEvent(ev) {
+        state.story.flags.activeChoiceEvent = ev.id;
+        appendLine("", "system");
+        appendLine(ev.prompt, "info");
+        appendLine("options: " + Object.keys(ev.options).join(" | "), "system");
+        appendLine("use: choose <option>", "system");
+    }
+
+    function handleChoice(option) {
+        const evId = state.story.flags.activeChoiceEvent;
+        if (!evId) {
+            appendLine("no active choice event.", "error");
+            return;
+        }
+
+        const ev = choiceEventDefs.find(e => e.id === evId);
+        if (!ev) {
+            appendLine("choice event corrupted.", "error");
+            return;
+        }
+
+        const opt = ev.options[option];
+        if (!opt) {
+            appendLine("invalid option.", "error");
+            return;
+        }
+
+        // Apply effects
+        appendLine(opt.text, "info");
+
+        // Rep adjustments
+        if (opt.rep) {
+            Object.entries(opt.rep).forEach(([fac, amt]) => {
+                adjustFactionRep(fac, amt);
+            });
+        }
+
+        // Flags
+        if (opt.flag) {
+            state.story.flags[opt.flag] = true;
+        }
+
+        // Remove item if needed
+        if (opt.removeItem) {
+            const i = state.inventory.indexOf(opt.removeItem);
+            if (i !== -1) state.inventory.splice(i, 1);
+        }
+
+        delete state.story.flags.activeChoiceEvent;
+    }
 
     // ---------- RNG (deterministic by seed) ----------
     function mulberry32(a) {
@@ -651,6 +854,55 @@
     }
 
     // ---------- ENCOUNTERS & COMBAT ----------
+    // ---------- NPC DEFINITIONS ----------
+    const npcDefs = [
+        {
+            id: "oracle_ghostline",
+            name: "THE GHOSTLINE ORACLE",
+            minProgress: 20,
+            faction: "ghostline",
+            lines: [
+                "the grid shivers when you walk, wanderer.",
+                "ghosts cling to your signature. do you feel them?",
+                "the fracture listens… choose your path wisely."
+            ]
+        },
+        {
+            id: "mirrorshade_emissary",
+            name: "MIRRORSHADE EMISSARY",
+            minProgress: 40,
+            faction: "mirrorshade",
+            lines: [
+                "mirrors are windows. windows become doors.",
+                "the legion watches. your choices ripple.",
+                "bring us relics, and the city may yet pivot."
+            ]
+        },
+        {
+            id: "syntech_courier",
+            name: "SYNTECH COURIER",
+            minProgress: 60,
+            faction: "syntech",
+            lines: [
+                "syntech predicted your arrival. statistically inevitable.",
+                "your shard integrity is drifting. recommend stabilization.",
+                "return with a heart-core, and we will upgrade your shell."
+            ]
+        }
+    ];
+
+    function spawnNPCIfEligible() {
+        const prog = state.story.mainProgress;
+        const eligible = npcDefs.filter(n => prog >= n.minProgress);
+
+        if (!eligible.length) return null;
+
+        // 15% chance to spawn an NPC if eligible
+        if (rand() < 0.15) {
+            return choice(eligible);
+        }
+        return null;
+    }
     function inEncounter() {
         return !!state.encounter;
     }
@@ -909,6 +1161,19 @@
             if (f) appendLine("  - " + f.text, "system");
         });
     }
+    function talkToNPC(npc) {
+        if (!npc) {
+            appendLine("no entity present to converse with.", "system");
+            return;
+        }
+        appendLine("", "system");
+        appendLine(`[TALK] ${npc.name}`, "info");
+        appendLine(choice(npc.lines), "system");
+        if (npc.faction) {
+            adjustFactionRep(npc.faction, 2);
+        }
+    }
+
     function describeCurrentRoom() {
         const room = currentRoom();
         if (!room) return;
@@ -934,6 +1199,22 @@
             appendLine("", "system");
             appendLine("[STORY NODE DETECTED]", "info");
             appendLine(choice(storyFragments), "system");
+            advanceStory(5);
+        }
+
+        // NPC encounter chance
+        const npc = spawnNPCIfEligible();
+        if (npc) {
+            state.story.lastNPC = npc.id;
+            appendLine("", "system");
+            appendLine(`[ENTITY DETECTED] ${npc.name}`, "info");
+            appendLine("use 'talk' to engage.", "system");
+        }
+
+        // choice event chance
+        const cev = spawnChoiceEvent();
+        if (cev) {
+            triggerChoiceEvent(cev);
         }
 
         // lore node chance
@@ -942,6 +1223,7 @@
             if (available.length) {
                 const fragment = choice(available);
                 state.story.loreFragments.push(fragment.id);
+                advanceStory(1);
                 appendLine("", "system");
                 appendLine("[LORE FRAGMENT DISCOVERED]", "info");
                 appendLine(fragment.text, "system");
@@ -953,7 +1235,7 @@
         }
 
         // chance of ambient encounter on entering a new node
-        if (!inEncounter() && rand() < 0.3) {
+        if (!inEncounter() && rand() < 0.12) {
             spawnEncounter("move");
         }
     }
@@ -1132,11 +1414,33 @@
             case "run":
                 appendLine("no hostile signatures currently locked.", "system");
                 break;
+            case "talk":
+                if (!state.story.lastNPC) {
+                    appendLine("no entity detected to talk to.", "system");
+                } else {
+                    const npcObj = npcDefs.find(n => n.id === state.story.lastNPC);
+                    talkToNPC(npcObj);
+                }
+                break;
             case "use":
                 useItem(arg);
                 break;
             case "codex":
                 showCodex();
+                break;
+            case "align":
+                if (!arg) {
+                    appendLine("usage: align <faction>", "system");
+                } else {
+                    alignFaction(arg);
+                }
+                break;
+            case "choose":
+                if (!arg) {
+                    appendLine("usage: choose <option>", "system");
+                } else {
+                    handleChoice(arg);
+                }
                 break;
             default:
                 appendLine("unknown instruction. type 'help' for protocol list.", "error");
@@ -1163,6 +1467,8 @@
                 "  load <code>    restore game state from savecode",
                 "  use <item>     consume or activate an item from inventory",
                 "  codex          list discovered lore fragments",
+                "  align <faction>  pledge allegiance to ghostline / mirrorshade / syntech",
+                "  choose <opt>    resolve a faction choice event",
                 "",
                 "combat specials:",
                 "  attack         engage current hostile construct",
