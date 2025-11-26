@@ -1607,13 +1607,18 @@ state.story = {
 
     function createSaveCode() {
         const saveObj = {
+            _v: 2, // save format version
             seed: state.seed,
-            room: state.currentRoomId,
-            health: state.health,
-            maxHealth: state.maxHealth,
-            xp: state.xp,
-            level: state.level,
-            inventory: state.inventory
+            world: state.world,
+            story: state.story,
+            player: {
+                currentRoomId: state.currentRoomId,
+                health: state.health,
+                maxHealth: state.maxHealth,
+                xp: state.xp,
+                level: state.level,
+                inventory: state.inventory
+            }
         };
         const encoded = xorCipher(JSON.stringify(saveObj));
         return btoa(encoded);
@@ -1624,22 +1629,83 @@ state.story = {
             const decoded = xorCipher(atob(code));
             const obj = JSON.parse(decoded);
 
-            state.seed = obj.seed;
-            state.rng = mulberry32(obj.seed);
-            state.currentRoomId = obj.room;
-            state.health = obj.health;
-            state.maxHealth = obj.maxHealth;
-            state.xp = obj.xp;
-            state.level = obj.level;
-            state.inventory = obj.inventory || [];
-            state.encounter = null;
+            // New-format saves (v2+)
+            if (obj._v === 2) {
+                state.seed = obj.seed;
+                state.rng = mulberry32(state.seed);
 
-            updateStatusHUD();
-            updateLocationLabel();
-            appendLine("save loaded successfully.", "info");
-            describeCurrentRoom();
+                // restore world if present; otherwise regenerate from seed
+                if (obj.world) {
+                    state.world = obj.world;
+                } else {
+                    generateWorld(state.seed);
+                }
+
+                // restore story state with safe fallbacks
+                if (obj.story) {
+                    const baseStory = {
+                        mainProgress: 0,
+                        loreFragments: [],
+                        factions: {
+                            ghostline: 0,
+                            mirrorshade: 0,
+                            syntech: 0
+                        },
+                        flags: {},
+                        endingsSeen: [],
+                        visitedRooms: {}
+                    };
+                    const mergedStory = {
+                        ...baseStory,
+                        ...obj.story,
+                        factions: {
+                            ...baseStory.factions,
+                            ...(obj.story.factions || {})
+                        },
+                        visitedRooms: obj.story.visitedRooms || baseStory.visitedRooms
+                    };
+                    state.story = mergedStory;
+                }
+
+                const p = obj.player || {};
+                state.currentRoomId = p.currentRoomId || state.currentRoomId;
+                state.health = p.health ?? state.health;
+                state.maxHealth = p.maxHealth ?? state.maxHealth;
+                state.xp = p.xp ?? state.xp;
+                state.level = p.level ?? state.level;
+                state.inventory = p.inventory || [];
+                state.encounter = null;
+
+                updateStatusHUD();
+                updateLocationLabel();
+                appendLine("save loaded successfully (v2).", "info");
+                describeCurrentRoom();
+                return;
+            }
+
+            // Legacy format (no _v): try to interpret old structure
+            if (obj.seed && obj.room) {
+                state.seed = obj.seed;
+                generateWorld(state.seed);
+
+                state.currentRoomId = obj.room;
+                state.health = obj.health ?? state.health;
+                state.maxHealth = obj.maxHealth ?? state.maxHealth;
+                state.xp = obj.xp ?? state.xp;
+                state.level = obj.level ?? state.level;
+                state.inventory = obj.inventory || [];
+                state.encounter = null;
+
+                updateStatusHUD();
+                updateLocationLabel();
+                appendLine("legacy save loaded (upgraded).", "info");
+                describeCurrentRoom();
+                return;
+            }
+
+            appendLine("invalid savecode payload.", "error");
         } catch (e) {
-            appendLine("invalid savecode. corrupted or malformed.", "error");
+            appendLine("invalid savecode. corrupted or incompatible.", "error");
         }
     }
 
