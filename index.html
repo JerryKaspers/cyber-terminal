@@ -571,6 +571,123 @@ state.story = {
             }
         }
     ];
+    // --- D7-2: Faction Quest Mid-Steps ---
+    choiceEventDefs.push(
+        {
+            id: "ghostline_step2",
+            faction: "ghostline",
+            minProgress: 45,
+            requiresFlag: "ghostline_step1=accepted",
+            prompt: "[GHOSTLINE] \"the phantom recalls your touch. retrieve its echo-shell.\"",
+            options: {
+                take: {
+                    text: "you accept. the whisper grows into a steady tone.",
+                    rep: { ghostline: +6 },
+                    flag: "ghostline_step2=taken"
+                },
+                refuse: {
+                    text: "the whisper dims into nothingness.",
+                    rep: { ghostline: -4 },
+                    flag: "ghostline_step2=refused"
+                }
+            }
+        },
+        {
+            id: "mirrorshade_step2",
+            faction: "mirrorshade",
+            minProgress: 55,
+            requiresFlag: "mirrorshade_step1=accepted",
+            prompt: "[MIRRORSHADE] \"the splinter resonates. follow the distortion trail.\"",
+            options: {
+                follow: {
+                    text: "you step into shifting reflections.",
+                    rep: { mirrorshade: +6 },
+                    flag: "mirrorshade_step2=follow"
+                },
+                ignore: {
+                    text: "the reflections warp aggressively and vanish.",
+                    rep: { mirrorshade: -4 },
+                    flag: "mirrorshade_step2=ignored"
+                }
+            }
+        },
+        {
+            id: "syntech_step2",
+            faction: "syntech",
+            minProgress: 65,
+            requiresFlag: "syntech_step1=comply",
+            prompt: "[SYNTECH] \"calibration incomplete. locate node with compatible heart-core slot.\"",
+            options: {
+                proceed: {
+                    text: "you proceed with system directive.",
+                    rep: { syntech: +6 },
+                    flag: "syntech_step2=proceed"
+                },
+                abort: {
+                    text: "syntech notes your deviation from protocol.",
+                    rep: { syntech: -4 },
+                    flag: "syntech_step2=abort"
+                }
+            }
+        }
+    );
+    // --- D7: Faction Quest Arcs ---
+    choiceEventDefs.push(
+        {
+            id: "ghostline_step1",
+            faction: "ghostline",
+            minProgress: 25,
+            prompt: "[GHOSTLINE] \"a whisper follows you. collect the residue of a fallen phantom.\"",
+            options: {
+                accept: {
+                    text: "you nod. the whisper grows louder.",
+                    flag: "ghostline_step1=accepted",
+                    rep: { ghostline: +5 }
+                },
+                ignore: {
+                    text: "you ignore the whisper. it fades into static.",
+                    rep: { ghostline: -5 },
+                    flag: "ghostline_step1=ignored"
+                }
+            }
+        },
+        {
+            id: "mirrorshade_step1",
+            faction: "mirrorshade",
+            minProgress: 35,
+            prompt: "[MIRRORSHADE] \"shards of the city reflect your path. retrieve a mirrorbone splinter.\"",
+            options: {
+                accept: {
+                    text: "you accept the task. reflections move behind you.",
+                    flag: "mirrorshade_step1=accepted",
+                    rep: { mirrorshade: +5 }
+                },
+                deny: {
+                    text: "you refuse. reflections distort violently.",
+                    rep: { mirrorshade: -5 },
+                    flag: "mirrorshade_step1=denied"
+                }
+            }
+        },
+        {
+            id: "syntech_step1",
+            faction: "syntech",
+            minProgress: 45,
+            prompt: "[SYNTECH] \"deliver a synthetic heart-core for system calibration.\"",
+            options: {
+                comply: {
+                    text: "you comply. syntech logs the interaction.",
+                    flag: "syntech_step1=comply",
+                    rep: { syntech: +5 }
+                },
+                reject: {
+                    text: "you reject the directive. syntech flags you as noncompliant.",
+                    rep: { syntech: -8 },
+                    flag: "syntech_step1=reject"
+                }
+            }
+        }
+    );
 
     function spawnChoiceEvent() {
         const prog = state.story.mainProgress;
@@ -580,6 +697,7 @@ state.story = {
         const eligible = choiceEventDefs.filter(e => {
             if (prog < e.minProgress) return false;
             if (e.requiresItem && !inv.includes(e.requiresItem)) return false;
+            if (e.requiresFlag && !state.story.flags[e.requiresFlag]) return false;
             return true;
         });
 
@@ -1352,6 +1470,25 @@ state.story = {
             "you wonder if the fracture changes you… or reveals you."
         ];
         if (rand() < 0.18) appendLine(choice(innerVoice), "dim");
+        // --- D7: Story Integration Layer ---
+        const aligned = state.story.flags.alignedFaction;
+        if (aligned) {
+            const factionMood = {
+                ghostline: [
+                    "the air dims—ghostline signatures flutter at the edges of perception.",
+                    "a soft echo trails behind your movements, as if the node hums your name."
+                ],
+                mirrorshade: [
+                    "reflections tremble subtly in your presence.",
+                    "the angles of the room feel… incorrect, bending toward you."
+                ],
+                syntech: [
+                    "a soft diagnostic ping ripples through the floor plating.",
+                    "the node’s lights pulse in precise intervals, syncing with your shard."
+                ]
+            };
+            if (rand() < 0.4) appendLine(choice(factionMood[aligned]), "system");
+        }
 
         const exits = Object.keys(room.exits);
         if (exits.length) {
