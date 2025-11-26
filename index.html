@@ -436,7 +436,8 @@ state.story = {
         syntech: 0
     },
     flags: {},
-    endingsSeen: []
+    endingsSeen: [],
+    visitedRooms: {}
 };
 
     // ---------- STORY PROGRESSION ENGINE ----------
@@ -1238,6 +1239,120 @@ state.story = {
         appendLine(`// biome: ${room.biome}`, "system");
         appendLine(room.desc, "system");
 
+        // --- D6: World Memory System ---
+        if (!state.story.visitedRooms[room.id]) {
+            state.story.visitedRooms[room.id] = 1;
+        } else {
+            state.story.visitedRooms[room.id]++;
+        }
+
+        const visits = state.story.visitedRooms[room.id];
+        if (visits > 1 && visits <= 4) {
+            const memoryLines = [
+                "the node reacts to your presence… as if recognizing your return.",
+                "ghost-data shimmers briefly — echoes of your prior traversal.",
+                "faint footprints of neon linger where you once stood.",
+                "the ambience shifts subtly, remembering your previous path."
+            ];
+            appendLine(choice(memoryLines), "dim");
+        } else if (visits > 4) {
+            const deepMemory = [
+                "the node now remembers you clearly — its patterns shift in anticipation.",
+                "your repeated presence imprints on the circuitry; the room feels altered.",
+                "old data rearranges itself, forming a subtle path only you can sense."
+            ];
+            appendLine(choice(deepMemory), "system");
+        }
+
+        // --- D2: Enhanced Narrative Layer ---
+        const sensory = [
+            "a faint vibration thrums beneath your boots — the city’s pulse syncing with your stride.",
+            "ozone hangs in the air, sharp and metallic, as if reality just sheared nearby.",
+            "your optics auto-adjust to drifting particles of neon dust floating like fireflies.",
+            "somewhere above, hydraulic vents exhale steam, masking distant movement.",
+            "shadows stretch unnaturally along the walls, bending around unseen data currents.",
+            "you feel watched — not by eyes, but by the hum of ancient subnets awakening.",
+            "a cold breeze slips between broken conduits, carrying whispers of corrupted code.",
+            "the ground beneath you ripples once, as if testing your presence."
+        ];
+        appendLine(choice(sensory), "dim");
+
+        const narrativePush = [
+            "the node feels older than the grid around it — like a memory refusing to fade.",
+            "your shard records faint echoes here, as if someone walked this exact path before.",
+            "patchy AR overlays flicker, replaying fragments of lives you never lived.",
+            "for a moment, you sense a fork in reality… then it snaps back into place.",
+            "your steps leave brief neon footprints that fade a little too slowly."
+        ];
+        if (rand() < 0.35) appendLine(choice(narrativePush), "system");
+
+        // --- D3: Biome-Driven Narrative Layer ---
+        const biomeNarrative = {
+            "neon rain back-alley": [
+                "rain hisses against metal grates, each droplet sparking faint neon trails.",
+                "you hear distant chatter—garbled voices bleeding through wet comm-lines."
+            ],
+            "subterranean data catacomb": [
+                "ancient servers hum like tombstones dreaming in electric sleep.",
+                "the air tastes metallic, as if you’re inhaling archived memories."
+            ],
+            "ionized fog district": [
+                "fog rolls through the streets in slow pulses, glowing faintly with static.",
+                "your HUD flickers—ion interference bends light in impossible angles."
+            ],
+            "phase-shifted server canyon": [
+                "towering server pillars stretch upward, phasing in and out like ghosts.",
+                "the ground vibrates with lost packets seeking routes that no longer exist."
+            ],
+            "mag-lev transit underbelly": [
+                "a distant magnetic rumble echoes beneath your feet.",
+                "stray sparks dance along old rail lines, triggered by unseen travelers."
+            ],
+            "holographic bazaar of packets": [
+                "fragmented vendors flicker in and out, advertising obsolete software.",
+                "a thousand ghost-offers hover in the air, looping endlessly."
+            ],
+            "rain-slick code bazaar": [
+                "market stalls built from reclaimed consoles glow beneath dripping neon.",
+                "smells of coolant and synth-food mix into a strangely comforting haze."
+            ],
+            "low-orbit junk ring": [
+                "debris drifts overhead in lazy spirals, illuminated by failing satellites.",
+                "the floor vibrates with distant impacts—orbital trash finding a new home."
+            ],
+            "bio-luminescent undergrid": [
+                "fungal light patterns pulse with rhythmic data-signatures.",
+                "veins of glowing moss outline pathways older than recorded memory."
+            ],
+            "fractured mirror city": [
+                "reflections move independently, lagging behind or leaping ahead.",
+                "shattered glass panels whisper echoes of people who are not here."
+            ]
+        };
+
+        const biomeLines = biomeNarrative[room.biome];
+        if (biomeLines && rand() < 0.8) appendLine(choice(biomeLines), "dim");
+
+        // --- D4: Micro Story Events ---
+        const microEvents = [
+            "a loose conduit snaps with a sharp crack, showering sparks.",
+            "your shard vibrates once—something nearby is scanning you.",
+            "static crawls along your arms like digital frost.",
+            "an unseen drone passes overhead, its shadow lagging behind.",
+            "a ripple moves through the air, like reality buffering."
+        ];
+        if (rand() < 0.25) appendLine(choice(microEvents), "system");
+
+        // --- D5: Inner Monologue Engine ---
+        const innerVoice = [
+            "you can't shake the feeling you've walked this path before.",
+            "a memory stirs—too sharp, too vivid to be yours.",
+            "your pulse syncs with the city again… it's learning you.",
+            "something watches through the cracks of reality.",
+            "you wonder if the fracture changes you… or reveals you."
+        ];
+        if (rand() < 0.18) appendLine(choice(innerVoice), "dim");
+
         const exits = Object.keys(room.exits);
         if (exits.length) {
             appendLine("paths: " + exits.join(", "), "system");
@@ -1715,6 +1830,16 @@ state.story = {
         ];
     }
 
+    // ----- NARRATIVE INTRO (D-1) -----
+    const narrativeIntro = [
+        "",
+        "you awaken to a dim neon glow humming behind your eyelids…",
+        "fragments of memory scatter like broken holograms.",
+        "a cold data-stream trickles down your spine as systems recalibrate.",
+        "the city breathes around you — a living circuit, waiting.",
+        ""
+    ];
+
     const bootLines = [
         "",
         "[BOOT] initializing neon runtime... [####------] 40%",
@@ -1736,6 +1861,9 @@ state.story = {
         let idx = 0;
 
         getBannerLines().forEach((l) => appendLine(l, "banner"));
+        appendLine("", "system");
+        // print narrative intro before boot sequence
+        narrativeIntro.forEach(l => appendLine(l, "system"));
         appendLine("", "system");
 
         function nextBootLine() {
